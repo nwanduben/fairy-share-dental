@@ -59,6 +59,12 @@ tests/              unit/, contract/ (full flow on mock), live/ (opt-in)
 docs/               ARCHITECTURE.md, OPEN_DENTAL_NOTES.md, TEST_SCRIPTS.md
 ```
 
+## Deployment
+- **Hosted backend:** https://fairy-share-dental-2.onrender.com (Render free plan, Docker, deploys from `main`).
+- **Secrets** live in Render's Environment tab, not in the repo. `render.yaml` marks them `sync: false`.
+- **Free instances sleep** after ~15 minutes idle, so `n8n/fsd_keep_backend_awake.workflow.json` pings `/health` every 10 minutes.
+- **Before a demo:** re-run `backend/scripts/seed_demo_patients.py` — the Open Dental test DB is wiped periodically.
+
 ## Status
 - ✅ **V1: booking.** The live Open Dental booking and verification were confirmed on 2026-09-22.
 - ✅ **V1: confirmations.** Email, SMS or Telegram, sent through n8n after verification.

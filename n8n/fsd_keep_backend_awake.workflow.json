@@ -32,7 +32,7 @@
       ],
       "onError": "continueRegularOutput",
       "parameters": {
-        "url": "https://REPLACE-WITH-RENDER-URL.onrender.com/health",
+        "url": "https://fairy-share-dental-2.onrender.com/health",
         "options": {
           "timeout": 30000
         }
