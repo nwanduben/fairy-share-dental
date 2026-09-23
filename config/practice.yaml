@@ -1,0 +1,53 @@
+# Fairy Share Dental — practice configuration (FICTIONAL practice, demo only)
+#
+# Open Dental IDs below were discovered from the Open Dental public developer
+# test database on 2026-09-22 (GET /operatories, GET /providers).
+# For a real practice, replace them with that practice's own IDs.
+
+practice:
+  name: Fairy Share Dental
+  city: Dallas
+  state: TX
+  timezone: America/Chicago        # all Open Dental times are treated as practice-local
+  phone_display: "(214) 555-0142"  # fictional
+
+# Where availability comes from:
+#   config  -> office hours below, minus live Open Dental appointments (conflict-checked)
+#   slots   -> Open Dental GET /appointments/Slots (requires provider schedules in Open Dental)
+# The Open Dental test DB has no provider schedules, so the demo uses "config".
+availability_source: config
+
+booking_rules:
+  min_notice_minutes: 120      # earliest bookable time = now + this
+  max_search_days: 21          # how far ahead a single availability search may look
+  start_increment_minutes: 30  # candidate start times: 8:00, 8:30, 9:00 ...
+  max_options_offered: 3       # how many times the agent offers at once
+  slot_offer_ttl_minutes: 15   # an offered slot_id expires after this
+
+# Office hours (practice-local). Breaks are never bookable.
+office_hours:
+  monday:    { open: "08:00", close: "17:00", breaks: [["12:00", "13:00"]] }
+  tuesday:   { open: "08:00", close: "17:00", breaks: [["12:00", "13:00"]] }
+  wednesday: { open: "08:00", close: "17:00", breaks: [["12:00", "13:00"]] }
+  thursday:  { open: "08:00", close: "17:00", breaks: [["12:00", "13:00"]] }
+  friday:    { open: "08:00", close: "14:00", breaks: [] }
+  saturday:  null
+  sunday:    null
+
+closed_dates: []   # e.g. ["2026-11-26", "2026-12-25"]
+
+# Providers (ProvNum -> how the agent refers to them). Only these fields are ever exposed.
+providers:
+  1: { spoken_name: "Dr. Albert",     role: dentist }
+  3: { spoken_name: "Dr. Lexington",  role: dentist }
+  2: { spoken_name: "Tina, our hygienist",  role: hygienist }
+  4: { spoken_name: "Bruce, our hygienist", role: hygienist }
+
+# Operatories (OperatoryNum -> who works there).
+# Hygiene rooms: ProvNum = supervising dentist, ProvHyg = hygienist (mirrors Open Dental's operatory setup).
+operatories:
+  1: { name: "OP-1", kind: dentist,  dentist: 1 }
+  2: { name: "OP-2", kind: dentist,  dentist: 3 }
+  3: { name: "OP-3 Overflow", kind: dentist, dentist: null }   # no assigned provider; not used for booking
+  5: { name: "Hyg1", kind: hygiene,  dentist: 1, hygienist: 2 }
+  6: { name: "Hyg2", kind: hygiene,  dentist: 3, hygienist: 4 }

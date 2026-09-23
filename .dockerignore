@@ -1,0 +1,8 @@
+.venv/
+.env
+tests/
+docs/
+n8n/
+elevenlabs/.provisioned.json
+__pycache__/
+.pytest_cache/

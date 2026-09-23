@@ -1,0 +1,38 @@
+# Render Blueprint — free web service for the Fairy Share Dental tools backend.
+# Secrets are NOT in this file: set them in the Render dashboard (sync: false asks on deploy).
+services:
+  - type: web
+    name: fsd-backend
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: OD_MODE
+        value: live
+      - key: OD_BASE_URL
+        value: https://api.opendental.com/api/v1
+      - key: OD_MIN_INTERVAL_SECONDS
+        value: "1.1"
+      - key: CONFIG_DIR
+        value: config
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DEMO_SMS_VIA_TELEGRAM
+        value: "true"
+      - key: N8N_WEBHOOK_HEADER
+        value: Authorization
+      - key: OD_DEVELOPER_KEY
+        sync: false
+      - key: OD_CUSTOMER_KEY
+        sync: false
+      - key: TOOL_SECRET
+        sync: false
+      - key: REF_SIGNING_KEY
+        sync: false
+      - key: N8N_CONFIRMATION_WEBHOOK_URL
+        sync: false
+      - key: N8N_WEBHOOK_SECRET
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false

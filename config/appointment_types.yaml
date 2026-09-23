@@ -1,0 +1,65 @@
+# Fairy Share Dental appointment types (demo defaults — every value is configurable).
+#
+# Durations are NOT universal. They are set per practice here and sent to Open Dental
+# as an appointment Pattern: one character per 5 minutes, 'X' = provider time,
+# '/' = assistant/hygienist-only time. The pattern length defines the appointment length.
+#
+# open_dental_appointment_type_num: optional. If a practice has a matching Open Dental
+# AppointmentType, put its number here. Left null for the test DB (it has only one type,
+# "WebSched New Patient Default"), so our Pattern is always what defines the length.
+
+appointment_types:
+  new_patient_exam:
+    display_name: New Patient Exam
+    spoken_name: a new patient exam
+    duration_minutes: 60
+    pattern: "//XXXXXXXX//"
+    provider_role: dentist
+    operatories: [1, 2]
+    is_hygiene: false
+    new_patients_only: true
+    open_dental_appointment_type_num: null
+
+  cleaning:
+    display_name: Cleaning
+    spoken_name: a cleaning
+    duration_minutes: 60
+    pattern: "/XXXXXXXXXX/"
+    provider_role: hygienist
+    operatories: [5, 6]
+    is_hygiene: true
+    new_patients_only: false
+    open_dental_appointment_type_num: null
+
+  emergency_exam:
+    display_name: Emergency Exam
+    spoken_name: an emergency exam
+    duration_minutes: 30
+    pattern: "/XXXX/"
+    provider_role: dentist
+    operatories: [1, 2]
+    is_hygiene: false
+    new_patients_only: false
+    open_dental_appointment_type_num: null
+
+  general_consultation:
+    display_name: General Consultation
+    spoken_name: a general consultation
+    duration_minutes: 30
+    pattern: "/XXXX/"
+    provider_role: dentist
+    operatories: [1, 2]
+    is_hygiene: false
+    new_patients_only: false
+    open_dental_appointment_type_num: null
+
+  cosmetic_consultation:
+    display_name: Cosmetic Consultation
+    spoken_name: a cosmetic consultation
+    duration_minutes: 45
+    pattern: "/XXXXXXX/"
+    provider_role: dentist
+    operatories: [1, 2]
+    is_hygiene: false
+    new_patients_only: false
+    open_dental_appointment_type_num: null

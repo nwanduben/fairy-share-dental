@@ -1,0 +1,305 @@
+{
+  "name": "Fairy Share Dental - Appointment Confirmation",
+  "nodes": [
+    {
+      "id": "wh",
+      "name": "Verified Appointment Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "fsd-appointment-confirmation",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fsd-appointment-confirmation",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "FSD Webhook Secret"
+        }
+      }
+    },
+    {
+      "id": "build",
+      "name": "Build Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Validates the backend payload and builds the confirmation message.\n// The backend only calls this AFTER Open Dental verified the appointment.\nconst b = $input.first().json.body || {};\nconst required = ['event', 'channel', 'to', 'appointment_type', 'spoken_time', 'practice_name'];\nfor (const k of required) {\n  if (!b[k]) throw new Error(`Missing field: ${k}`);\n}\nif (b.event !== 'appointment.verified') throw new Error('Unsupported event');\nif (!['email', 'sms', 'telegram'].includes(b.channel)) throw new Error('Unsupported channel');\n\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\nconst name = b.patient_first_name || 'there';\nconst withWho = b.provider_name ? ` with ${b.provider_name}` : '';\nconst phone = b.practice_phone || 'the office';\n\nconst text =\n  `Hi ${name}, your ${b.appointment_type} at ${b.practice_name} is confirmed for ${b.spoken_time}${withWho} ` +\n  `(about ${b.duration_minutes} min). Need to change it? Call ${phone}. ` +\n  `Please arrive 10 minutes early. (Demo message - fictional practice.)`;\n\nconst html = `\n<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:auto;color:#1f2937\">\n  <h2 style=\"color:#0f766e;margin-bottom:4px\">${esc(b.practice_name)}</h2>\n  <p style=\"margin-top:0;color:#6b7280\">${esc(b.practice_city || '')}</p>\n  <p>Hi ${esc(name)},</p>\n  <p>Your appointment is <strong>confirmed</strong>:</p>\n  <table style=\"border-collapse:collapse;width:100%;background:#f0fdfa;border-radius:8px\">\n    <tr><td style=\"padding:8px 12px;color:#6b7280\">Appointment</td><td style=\"padding:8px 12px\"><strong>${esc(b.appointment_type)}</strong></td></tr>\n    <tr><td style=\"padding:8px 12px;color:#6b7280\">When</td><td style=\"padding:8px 12px\"><strong>${esc(b.spoken_time)}</strong></td></tr>\n    <tr><td style=\"padding:8px 12px;color:#6b7280\">Length</td><td style=\"padding:8px 12px\">About ${esc(b.duration_minutes)} minutes</td></tr>\n    ${b.provider_name ? `<tr><td style=\"padding:8px 12px;color:#6b7280\">With</td><td style=\"padding:8px 12px\">${esc(b.provider_name)}</td></tr>` : ''}\n  </table>\n  <p>Please arrive 10 minutes early and bring a photo ID and your insurance card if you have one.</p>\n  <p>Need to reschedule? Call us at ${esc(phone)}.</p>\n  <p style=\"font-size:12px;color:#9ca3af\">Demo message from a fictional practice. Not a real appointment.</p>\n</div>`;\n\nreturn [{\n  json: {\n    channel: b.channel,\n    to: b.to,\n    appointment_id: b.appointment_id,\n    subject: `Confirmed: ${b.appointment_type} - ${b.spoken_time}`,\n    text,\n    html,\n  },\n}];"
+      }
+    },
+    {
+      "id": "route",
+      "name": "Route by Channel",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        480,
+        300
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c-email",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "email",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "email"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c-sms",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "sms",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sms"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c-telegram",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "telegram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "telegram"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "gmail",
+      "name": "Send Email (Gmail)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        760,
+        100
+      ],
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_ME",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "id": "sms",
+      "name": "Send SMS (Twilio)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        760,
+        300
+      ],
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "from": "+15555550100",
+        "to": "={{ $json.to }}",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "credentials": {
+        "twilioApi": {
+          "id": "REPLACE_ME",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "id": "tg",
+      "name": "Send Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        500
+      ],
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "chatId": "={{ $json.to }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "id": "respond",
+      "name": "Respond to Backend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        300
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, sent: !$json.error, channel: $('Build Message').first().json.channel, error: $json.error ? String($json.error.message || $json.error) : null }) }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Verified Appointment Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Message": {
+      "main": [
+        [
+          {
+            "node": "Route by Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Channel": {
+      "main": [
+        [
+          {
+            "node": "Send Email (Gmail)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send SMS (Twilio)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email (Gmail)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send SMS (Twilio)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram": {
+      "main": [
+        [
+          {
+            "node": "Respond to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Chicago"
+  }
+}
