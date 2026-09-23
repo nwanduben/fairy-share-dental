@@ -36,13 +36,3 @@ services:
         sync: false
       - key: TELEGRAM_CHAT_ID
         sync: false
-
-  # Static demo page: the voice front end for Joy. No secrets — the only value it
-  # carries is Joy's public ElevenLabs agent id (set in web/config.js), and the
-  # allowlist and caps that protect her live in the ElevenLabs dashboard.
-  - type: web
-    name: fsd-demo
-    runtime: static
-    buildCommand: "echo 'static site: nothing to build'"
-    staticPublishPath: ./web
-    pullRequestPreviewsEnabled: false
