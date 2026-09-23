@@ -6,4 +6,4 @@
 //   - cap concurrent conversations and conversations per day
 //   - cap the length of a single conversation
 // Create or update the agent with: elevenlabs/provision_agent.py
-window.FSD_AGENT_ID = 'YOUR_ELEVENLABS_AGENT_ID';
+window.FSD_AGENT_ID = 'agent_9301m34m91cmf7g8456x2davxfh2';
