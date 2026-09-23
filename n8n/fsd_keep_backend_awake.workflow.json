@@ -1,0 +1,59 @@
+{
+  "name": "Fairy Share Dental - Keep Backend Awake",
+  "nodes": [
+    {
+      "id": "cron",
+      "name": "Every 10 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ping",
+      "name": "Ping Backend Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        300
+      ],
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "url": "https://REPLACE-WITH-RENDER-URL.onrender.com/health",
+        "options": {
+          "timeout": 30000
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 10 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Ping Backend Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Chicago"
+  }
+}
