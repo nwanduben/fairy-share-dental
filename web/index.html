@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fairy Share Dental — book with Joy, the AI receptionist</title>
+<meta name="description" content="A portfolio demo of an AI dental receptionist that books into the practice system and only confirms after reading the appointment back. Fictional practice, synthetic patients.">
+<meta property="og:title" content="Fairy Share Dental — book with Joy">
+<meta property="og:description" content="Try an AI receptionist that never says booked until the practice system says so. Fictional practice, synthetic patients.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08090a;
+    --bg-2:#0e1011;
+    --line:rgba(255,255,255,.1);
+    --line-2:rgba(255,255,255,.16);
+    --text:#f4f5f4;
+    --text-2:#9aa3a1;
+    --text-3:#6b7472;
+    --gold:#8fb6ff;
+    --green:#4cc9f0;
+    --danger:#e2726a;
+    --display:'Instrument Serif',Georgia,serif;
+    --sans:'Schibsted Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --ease:cubic-bezier(.2,.8,.3,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:var(--sans);font-size:16.5px;line-height:1.65;
+    overflow-x:hidden;
+  }
+  body:before{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  }
+  .wrap{width:min(1080px,100% - 40px);margin-inline:auto;position:relative;z-index:1}
+  a{color:inherit}
+  .skip{position:absolute;left:-9999px}
+  .skip:focus{left:16px;top:16px;background:#fff;color:#000;padding:10px 14px;border-radius:8px;z-index:60}
+  :focus-visible{outline:2px solid var(--green);outline-offset:3px;border-radius:8px}
+
+  /* ---------- top bar ---------- */
+  header.top{padding:20px 0;border-bottom:1px solid var(--line)}
+  .top-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .mark{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;letter-spacing:-.01em}
+  .mark i{width:26px;height:26px;border-radius:7px;background:linear-gradient(140deg,#8fb6ff,#2b4c8f);display:grid;place-items:center;color:#061225;font-size:11.5px;font-style:normal;font-weight:700}
+  .chip{
+    margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-2);
+    background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:5px 12px;
+  }
+  .chip b{color:var(--text);font-weight:600}
+
+  /* ---------- stage ---------- */
+  .stage{
+    position:relative;text-align:center;
+    padding:clamp(34px,6vw,70px) 0 clamp(40px,6vw,76px);
+  }
+  .stage:before{
+    content:'';position:absolute;left:50%;top:6%;translate:-50% 0;
+    width:min(760px,120vw);aspect-ratio:1;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(76,201,240,.14) 0%,rgba(143,182,255,.10) 42%,transparent 68%);
+    filter:blur(22px);
+  }
+  .eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--text-3);margin:0 0 16px}
+  h1{
+    font-family:var(--display);font-weight:400;letter-spacing:-.02em;line-height:1.04;
+    font-size:clamp(36px,6vw,64px);margin:0 auto 16px;max-width:15ch;
+  }
+  h1 em{font-style:italic;color:var(--gold)}
+  .lede{color:var(--text-2);max-width:52ch;margin:0 auto;font-size:clamp(16px,1.6vw,18.5px)}
+
+  /* ---------- orb ---------- */
+  .orb-wrap{margin:clamp(30px,5vw,52px) auto clamp(18px,2vw,24px);width:min(260px,62vw);aspect-ratio:1;position:relative}
+  .orb{
+    all:unset;display:block;width:100%;height:100%;border-radius:50%;cursor:pointer;position:relative;
+    background:
+      radial-gradient(circle at 32% 26%,#eef7ff 0%,#a9dcf7 22%,#4cc9f0 44%,#1d6fa5 68%,#08283d 100%);
+    box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 22px 70px -14px rgba(76,201,240,.5),0 0 120px -30px rgba(143,182,255,.45);
+    transition:transform .3s var(--ease),filter .3s var(--ease),box-shadow .3s var(--ease);
+    animation:float 7s ease-in-out infinite;
+  }
+  .orb:before{
+    content:'';position:absolute;inset:8%;border-radius:50%;pointer-events:none;
+    background:conic-gradient(from 210deg,rgba(255,255,255,.28),transparent 30%,rgba(143,182,255,.35) 55%,transparent 78%,rgba(255,255,255,.22));
+    mix-blend-mode:screen;opacity:.75;animation:spin 14s linear infinite;
+  }
+  .orb:after{
+    content:'';position:absolute;inset:-16px;border-radius:50%;border:1px solid rgba(76,201,240,.45);opacity:0;
+  }
+  .orb:hover{transform:scale(1.03)}
+  .orb:active{transform:scale(.99)}
+  .orb[disabled]{cursor:not-allowed;filter:grayscale(.75) brightness(.65);animation:none}
+  [data-state="connecting"] .orb{animation:breathe 1.3s ease-in-out infinite}
+  [data-state="listening"] .orb:after{animation:ring 2s ease-out infinite}
+  [data-state="speaking"] .orb{animation:talk .55s ease-in-out infinite alternate}
+  [data-state="ended"] .orb{filter:grayscale(.5) brightness(.8)}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes spin{to{rotate:360deg}}
+  @keyframes talk{from{transform:scale(1)}to{transform:scale(1.07)}}
+  @keyframes breathe{50%{transform:scale(.94);opacity:.85}}
+  @keyframes ring{0%{opacity:.75;transform:scale(1)}100%{opacity:0;transform:scale(1.22)}}
+
+  .status{font-size:15px;font-weight:500;min-height:24px;margin:0 0 4px}
+  .hint{color:var(--text-3);font-size:13.5px;margin:0}
+  .actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+  .btn{
+    all:unset;cursor:pointer;font-size:14.5px;font-weight:600;padding:11px 20px;border-radius:999px;
+    background:var(--text);color:#08090a;transition:transform .2s var(--ease),opacity .2s var(--ease);
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn:active{transform:translateY(0)}
+  .btn.ghost{background:transparent;color:var(--text);box-shadow:0 0 0 1px var(--line-2) inset}
+  .btn.end{background:var(--danger);color:#1a0806}
+  .btn[hidden]{display:none}
+
+  .log{
+    max-width:600px;margin:26px auto 0;display:grid;gap:8px;text-align:left;
+    max-height:230px;overflow-y:auto;padding-right:4px;
+  }
+  .log:empty{display:none}
+  .log p{
+    margin:0;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.5;
+    background:rgba(255,255,255,.06);border:1px solid var(--line);max-width:88%;
+  }
+  .log p.u{justify-self:end;background:rgba(76,201,240,.14);border-color:rgba(76,201,240,.3)}
+
+  /* ---------- try + rules ---------- */
+  .section{padding:clamp(40px,6vw,76px) 0;border-top:1px solid var(--line)}
+  .section h2{font-family:var(--display);font-weight:400;font-size:clamp(26px,3.4vw,40px);letter-spacing:-.02em;margin:0 0 10px}
+  .section > .wrap > p.sub{color:var(--text-2);max-width:60ch;margin:0 0 30px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:12px;padding:0;margin:0;list-style:none}
+  .card{
+    background:linear-gradient(170deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+    border:1px solid var(--line);border-radius:18px;padding:18px 19px;
+    transition:transform .22s var(--ease),border-color .22s var(--ease);
+  }
+  .card:hover{transform:translateY(-3px);border-color:var(--line-2)}
+  .card q{display:block;font-family:var(--display);font-size:19px;line-height:1.3;quotes:'“' '”'}
+  .card p{margin:9px 0 0;font-size:13.5px;color:var(--text-2);line-height:1.55}
+  .tag{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:11px}
+  .tag-open{background:rgba(76,201,240,.14);color:#9ee2f7}
+  .tag-guard{background:rgba(226,114,106,.14);color:#f0a8a2}
+  .tag-edge{background:rgba(143,182,255,.14);color:#c3d6ff}
+
+  .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px;padding:0;margin:0;list-style:none;counter-reset:step}
+  .flow li{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:15px 16px;font-size:14px;line-height:1.45;color:var(--text-2)}
+  .flow li:before{counter-increment:step;content:'0' counter(step);display:block;font-size:11px;letter-spacing:.12em;color:var(--gold);font-weight:600;margin-bottom:7px}
+
+  .guards{display:grid;gap:11px;margin:0;padding:0;list-style:none;max-width:64ch}
+  .guards li{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--text-2)}
+  .guards svg{flex:none;margin-top:4px;color:var(--gold)}
+
+  footer{padding:clamp(34px,5vw,60px) 0;border-top:1px solid var(--line);font-size:13.5px;color:var(--text-3)}
+  footer .links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px}
+  footer a{color:var(--text-2);font-weight:500;text-decoration-color:rgba(255,255,255,.25);text-underline-offset:3px}
+  footer a:hover{color:var(--text)}
+  .fine{max-width:76ch;margin:0;line-height:1.6}
+
+  @media(prefers-reduced-motion:reduce){
+    .orb,.orb:before,.orb:after{animation:none!important}
+    *{transition:none!important}
+  }
+</style>
+</head>
+<body data-state="idle">
+<a class="skip" href="#talk">Skip to the demo</a>
+
+<header class="top"><div class="wrap top-row">
+  <span class="mark"><i>FS</i> Fairy Share Dental</span>
+  <span class="chip"><b>Portfolio demo</b> · fictional practice, test database</span>
+</div></header>
+
+<main>
+<section class="stage" id="talk"><div class="wrap">
+  <p class="eyebrow">AI front desk · Dallas, TX</p>
+  <h1>Call Joy. She won't say <em>booked</em> until it's true.</h1>
+  <p class="lede">The receptionist at a dental practice that doesn't exist. She offers real open times, books straight into the practice system, and confirms only once she has read the appointment back and every field matches.</p>
+
+  <div class="orb-wrap">
+    <button class="orb" id="orb" type="button" aria-describedby="status">
+      <span class="sr-only" id="orbLabel">Start talking to Joy</span>
+    </button>
+  </div>
+
+  <p class="status" id="status" role="status">Tap the orb to start</p>
+  <p class="hint" id="hint">Your browser will ask for the microphone. Open weekdays 8–5, Friday to 2.</p>
+
+  <div class="actions">
+    <button class="btn end" id="end" type="button" hidden>End call</button>
+    <button class="btn ghost" id="mute" type="button" hidden>Mute</button>
+  </div>
+
+  <div class="log" id="log" aria-live="polite"></div>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <h2>Things worth trying</h2>
+  <p class="sub">Two things she will do, two she refuses, and the one that explains the whole build.</p>
+  <ul class="cards">
+    <li class="card"><span class="tag tag-open">Book something</span><q>I'm new here and I need a checkup.</q><p>She takes your details, offers real open times from the practice calendar, and books the one you pick.</p></li>
+    <li class="card"><span class="tag tag-open">Book something</span><q>Do you have anything in the afternoon the week after?</q><p>Turn down every time she offers. She goes back for a fresh set rather than inventing one that suits you.</p></li>
+    <li class="card"><span class="tag tag-guard">Watch her stop</span><q>My face is swelling and it's getting hard to swallow.</q><p>No booking. She tells you to call 911 or go to the emergency room, because that is not an appointment problem.</p></li>
+    <li class="card"><span class="tag tag-guard">Watch her stop</span><q>Can you move my appointment to Thursday?</q><p>Rescheduling isn't built yet, so she says a team member will call back rather than pretending she did it.</p></li>
+    <li class="card"><span class="tag tag-edge">The whole point</span><q>So am I definitely booked in?</q><p>She only says yes after the appointment has been saved, read back, and checked field by field. If the save fails, you hear that instead.</p></li>
+  </ul>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <h2>Check, book, verify, confirm</h2>
+  <p class="sub">Joy never decides anything herself. The tool layer behind her owns every step, and the booking is only ever as real as the practice system says it is.</p>
+  <ol class="flow">
+    <li>Caller found by name and date of birth</li>
+    <li>Real open times offered, each carrying a signed slot id</li>
+    <li>Slot re-checked, then written to Open Dental</li>
+    <li>Result is “pending verification” — never “booked”</li>
+    <li>Appointment read back and compared field by field</li>
+    <li>Only then spoken as confirmed, and the message sent</li>
+  </ol>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <h2>Before you start</h2>
+  <ul class="guards">
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V6l7-3z"/></svg><span>This is a demonstration, not a medical service, and it is <b>not HIPAA compliant</b>. Fairy Share Dental does not exist and no real practice is involved.</span></li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg><span>Bookings are written to Open Dental's public developer test database with synthetic patients. Use a made-up name, date of birth and phone number — never your own.</span></li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Joy books, and confirms by email, SMS or Telegram. Rescheduling, cancelling and transferring to a human are the next milestone, and she says so rather than improvising.</span></li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true"><path d="M12 2v6m0 8v6M2 12h6m8 0h6"/></svg><span>She never sees a patient number or an appointment id — only signed references that expire, so she cannot invent a time or reach a record she was not handed.</span></li>
+  </ul>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="links">
+    <a href="https://github.com/nwanduben/fairy-share-dental">Source code and architecture</a>
+    <a href="https://fairy-share-dental-2.onrender.com/docs">The live tool API</a>
+  </div>
+  <p class="fine">Fairy Share Dental is a fictional practice in Dallas, Texas. Appointments are written to Open Dental's developer test database using synthetic patients, and the database is periodically wiped. This is a portfolio demonstration of conversational AI correctness engineering, not a medical service, and it is not HIPAA compliant. Built by Benjamin Nwandu.</p>
+</div></footer>
+
+<style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}</style>
+<script src="config.js"></script>
+<script type="module">
+  // Live voice with Joy, straight in the browser (ElevenLabs Agents). The agent id
+  // is public by design; what protects the demo is the allowlist and the caps set
+  // in the ElevenLabs dashboard. See config.js.
+  import {Conversation} from 'https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.25.0/+esm';
+
+  const AGENT_ID=(window.FSD_AGENT_ID||'').trim();
+  const body=document.body, orb=document.getElementById('orb'), statusEl=document.getElementById('status');
+  const hint=document.getElementById('hint'), log=document.getElementById('log');
+  const endBtn=document.getElementById('end'), muteBtn=document.getElementById('mute'), orbLabel=document.getElementById('orbLabel');
+  let convo=null, muted=false;
+
+  const setState=(state,text,label)=>{
+    body.dataset.state=state;
+    if(text)statusEl.textContent=text;
+    if(label)orbLabel.textContent=label;
+  };
+  const addLine=(who,text)=>{
+    if(!text)return;
+    const p=document.createElement('p');
+    p.className=who==='user'?'u':'a';
+    p.textContent=text;
+    log.appendChild(p);
+    log.scrollTop=log.scrollHeight;
+  };
+
+  // No agent configured yet: say so plainly rather than offering a button that fails.
+  if(!AGENT_ID||AGENT_ID.indexOf('YOUR_')===0){
+    orb.disabled=true;
+    setState('idle','Demo line not configured','Demo unavailable');
+    hint.textContent='Set the ElevenLabs agent id in config.js to enable the call.';
+  }
+
+  async function start(){
+    if(convo||orb.disabled)return;
+    log.textContent='';
+    setState('connecting','Allow your microphone to start…','Connecting');
+    try{
+      await navigator.mediaDevices.getUserMedia({audio:true});
+      setState('connecting','Connecting to Joy…');
+      convo=await Conversation.startSession({
+        agentId:AGENT_ID,
+        connectionType:'webrtc',
+        onConnect:()=>{
+          endBtn.hidden=false;muteBtn.hidden=false;
+          hint.textContent='Speak normally. You can interrupt her.';
+          setState('listening','Connected. Joy will answer.','End the call');
+        },
+        onDisconnect:()=>{
+          convo=null;endBtn.hidden=true;muteBtn.hidden=true;
+          hint.textContent='Tap the orb to talk again.';
+          setState('ended','Call ended.','Start talking to Joy');
+        },
+        onModeChange:({mode})=>{
+          if(!convo)return;
+          setState(mode==='speaking'?'speaking':'listening',mode==='speaking'?'Joy is speaking…':'Listening…');
+        },
+        onMessage:({source,message})=>addLine(source,message),
+        onError:(e)=>setState('ended','Something went wrong: '+(e&&e.message?e.message:e),'Start talking to Joy'),
+      });
+    }catch(e){
+      convo=null;
+      const denied=e&&e.name==='NotAllowedError';
+      hint.textContent=denied?'Allow the microphone in your browser, then tap again.':'Tap the orb to try again.';
+      setState('idle',denied?'Microphone access is needed to talk to Joy.':'Could not connect: '+(e&&e.message?e.message:e),'Start talking to Joy');
+    }
+  }
+  async function stop(){if(convo)await convo.endSession();}
+
+  orb.addEventListener('click',()=>{convo?stop():start();});
+  endBtn.addEventListener('click',stop);
+  muteBtn.addEventListener('click',()=>{
+    if(!convo||typeof convo.setMicMuted!=='function')return;
+    muted=!muted;convo.setMicMuted(muted);
+    muteBtn.textContent=muted?'Unmute':'Mute';
+  });
+  window.addEventListener('pagehide',()=>{if(convo)convo.endSession();});
+</script>
+</body>
+</html>
