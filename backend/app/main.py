@@ -11,6 +11,7 @@ from .opendental.mock import MockOpenDentalClient
 from .opendental.models import OpenDentalError
 from .practice_config import load_config
 from .refs import RefSigner
+from .routers import schedule as schedule_router
 from .routers import tools
 from .services.availability import AvailabilityService
 from .services.booking import BookingService
@@ -90,6 +91,7 @@ def create_app(
     app.state.booking = BookingService(cfg, od, availability)
     app.state.notifier = notifier
     app.include_router(tools.router)
+    app.include_router(schedule_router.router)
 
     @app.get("/health")
     async def health():

@@ -28,6 +28,7 @@ class Settings:
     n8n_webhook_header: str = "X-FSD-Secret"
     telegram_chat_id: str = ""
     demo_sms_via_telegram: bool = False
+    admin_password: str = ""
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -50,6 +51,7 @@ class Settings:
             n8n_webhook_header=os.getenv("N8N_WEBHOOK_HEADER", "X-FSD-Secret"),
             telegram_chat_id=os.getenv("TELEGRAM_CHAT_ID", ""),
             demo_sms_via_telegram=os.getenv("DEMO_SMS_VIA_TELEGRAM", "false").strip().lower() in {"1", "true", "yes"},
+            admin_password=os.getenv("ADMIN_PASSWORD", ""),
         )
         s.validate()
         return s
