@@ -28,9 +28,13 @@ from reportlab.platypus import (
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_guide_content import BYLINE, CONTENT, SUBTITLE, TITLE  # noqa: E402
 
-OUT = Path(__file__).resolve().parent / "Fairy-Share-Dental-Build-Guide.pdf"
+MODULE = sys.argv[1] if len(sys.argv) > 1 else "build_guide_content"
+OUT_NAME = sys.argv[2] if len(sys.argv) > 2 else "Fairy-Share-Dental-Build-Guide.pdf"
+_mod = __import__(MODULE)
+BYLINE, CONTENT, SUBTITLE, TITLE = _mod.BYLINE, _mod.CONTENT, _mod.SUBTITLE, _mod.TITLE
+
+OUT = Path(__file__).resolve().parent / OUT_NAME
 
 INK = colors.HexColor("#14181a")
 MUTED = colors.HexColor("#5b6668")
@@ -71,6 +75,7 @@ S = {
 }
 
 WIDTH = LETTER[0] - 2 * inch
+FOOTER = getattr(_mod, "FOOTER", "Fairy Share Dental — AI receptionist build guide")
 
 
 def rich(text: str) -> str:
@@ -102,7 +107,9 @@ def build_table(rows: list[list[str]]):
     data += [[Paragraph(rich(c), S["cell"]) for c in r] for r in body]
     ncols = len(header)
     if ncols == 2:
-        widths = [WIDTH * 0.30, WIDTH * 0.70]
+        equal = {"visual", "audio"}
+        first_two = {str(header[0]).strip().lower(), str(header[1]).strip().lower()}
+        widths = [WIDTH * 0.5, WIDTH * 0.5] if first_two <= equal else [WIDTH * 0.30, WIDTH * 0.70]
     elif ncols == 3:
         widths = [WIDTH * 0.22, WIDTH * 0.50, WIDTH * 0.28]
     else:
@@ -167,7 +174,7 @@ def decorate(canvas, doc):
     if doc.page > 1:
         canvas.setFont("Helvetica", 8)
         canvas.setFillColor(MUTED)
-        canvas.drawString(inch, 0.62 * inch, "Fairy Share Dental — AI receptionist build guide")
+        canvas.drawString(inch, 0.62 * inch, FOOTER)
         canvas.drawRightString(LETTER[0] - inch, 0.62 * inch, str(doc.page))
         canvas.setStrokeColor(RULE)
         canvas.setLineWidth(0.4)
