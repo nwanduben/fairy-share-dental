@@ -86,3 +86,15 @@ def test_page_never_writes(client, od):
     login(client)
     client.get("/schedule")
     assert not any(c.startswith("POST") for c in od.calls)
+
+
+def test_empty_password_shows_form_not_json_error(client):
+    r = client.post("/schedule/login", data={"password": "  "}, follow_redirects=False)
+    assert r.status_code == 400 and "Please enter the password" in r.text
+
+
+def test_password_is_trimmed_on_both_sides(settings, od):
+    app = create_app(replace(settings, admin_password=f"  {PASSWORD}  "), od)
+    app.state.availability.now_local = lambda: FIXED_NOW
+    with TestClient(app) as c:
+        assert c.post("/schedule/login", data={"password": PASSWORD}, follow_redirects=False).status_code == 303

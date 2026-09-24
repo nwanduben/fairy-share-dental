@@ -64,9 +64,12 @@ async def schedule(request: Request, date_from: str | None = None, days: int = 7
 
 
 @router.post("/schedule/login")
-async def login(request: Request, password: str = Form(...)):
+async def login(request: Request, password: str = Form(default="")):
     s = request.app.state
-    if not s.settings.admin_password or not hmac.compare_digest(password, s.settings.admin_password):
+    password = (password or "").strip()
+    if not password:
+        return HTMLResponse(_login_page("Please enter the password."), 400)
+    if not s.settings.admin_password or not hmac.compare_digest(password, s.settings.admin_password.strip()):
         log.info("schedule login failed")
         return HTMLResponse(_login_page("That password was not recognized."), 401)
     resp = RedirectResponse("/schedule", status_code=303)
@@ -159,11 +162,13 @@ def _shell(title: str, body: str) -> str:
 def _login_page(error: str = "") -> str:
     err = f'<p class="err">{escape(error)}</p>' if error else ""
     return _shell("Schedule", f"""
-<form class="login" method="post" action="/schedule/login">
+<form class="login" method="post" action="/schedule/login" enctype="application/x-www-form-urlencoded">
   <div class="mark" style="justify-content:center"><i>FS</i> Fairy Share Dental</div>
   <p class="muted">Staff schedule viewer</p>
   {err}
-  <input type="password" name="password" placeholder="Password" autofocus aria-label="Password">
+  <input type="password" name="password" placeholder="Password" autofocus required
+         autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false"
+         aria-label="Password">
   <button class="btn on" type="submit" style="width:100%">Open schedule</button>
 </form>""")
 
