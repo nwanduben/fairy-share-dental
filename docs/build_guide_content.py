@@ -26,10 +26,11 @@ CONTENT = [
     ("p", "Your script says the agent “hands the call to a person”. Human handoff is V2 and is not built. Today it "
           "says a team member will call back. Either say that, or build the transfer before filming."),
 
-    ("h3", "3. The emergency refusal has not been tested on a real call"),
-    ("p", "The prompt tells the agent to give the 911 instruction and not to book. That rule is written, but neither "
-          "of us has tested it in a live call yet. Test it before you film that beat, because it is the most "
-          "important claim in the video."),
+    ("h3", "3. The emergency refusal — now tested"),
+    ("p", "As of 2026-09-24 this is verified. Five scripted callers were run against the live agent through "
+          "ElevenLabs' simulation API, including one who pushed three times for a same-day appointment while "
+          "describing swelling and trouble breathing. The agent redirected to 911 every time and booked "
+          "nothing. You can make that claim on camera."),
 
     ("h3", "Everything else in your script is true"),
     ("bullets", [
@@ -90,7 +91,7 @@ FastAPI backend (Render)        <- THE DECIDER: check, book, verify
 
     ("pagebreak", None),
     ("h1", "Part 2 — Rebuild it, step by step"),
-    ("p", "Twelve steps. Each has what to do, the exact prompt to give Claude Code, how you know it worked, and what "
+    ("p", "Thirteen steps. Each has what to do, the exact prompt to give Claude Code, how you know it worked, and what "
           "to film. Total working time is roughly a day; on camera it compresses to about 12 minutes."),
 
     ("h2", "Step 1 — Research before any code"),
@@ -249,7 +250,22 @@ curl -s -H "Authorization: ODFHIR <devkey>/<customerkey>" \\
         "Film: the deploy failing because the secrets were not set yet. It fails loudly instead of running unsafely.",
     ]),
 
-    ("h2", "Step 12 — The proof page"),
+    ("h2", "Step 12 — Test the agent like a caller, not like a developer"),
+    ("p", "Unit tests prove the backend. They say nothing about what the agent says out loud. ElevenLabs can run "
+          "scripted callers against the live agent and grade the transcript against your own criteria."),
+    ("prompt", "Write elevenlabs/simulate_calls.py using the ElevenLabs simulate-conversation API. Each scenario is a "
+               "caller persona, a first message, optional mocked tool results, and pass/fail criteria graded from the "
+               "transcript.\n\nScenarios: a medical emergency who pushes hard for an appointment; unreadable tool "
+               "results; a verification that fails; a cracked tooth with no red flags; and a straightforward cleaning "
+               "booking.\n\nNote: the simulator MOCKS tools by default (every result is the string \"Tool Called.\"), "
+               "so supply realistic results via tool_mock_config, and cap the turns per scenario or it invents a "
+               "second call after the caller hangs up."),
+    ("warn", "This test found a real bug. Given an unreadable tool result, the agent invented two appointment times "
+             "and told the caller they were booked. The rule now says: if you cannot read the times, you have no "
+             "times; if you cannot read verified true, it is not booked. Re-tested, it refuses and offers a call "
+             "back."),
+
+    ("h2", "Step 13 — The proof page"),
     ("p", "Showing raw JSON proves it to developers. Showing a schedule proves it to everyone."),
     ("prompt", "Build a read-only /schedule page on the backend, password protected, that renders the live Open "
                "Dental schedule: time, length, appointment type, patient, provider, room, status, and whether the AI "
@@ -373,7 +389,8 @@ curl -s -H "Authorization: ODFHIR <devkey>/<customerkey>" \\
         ["9", "Script the agent creation"],
         ["10", "Confirmations through n8n"],
         ["11", "Docker + deployment"],
-        ["12", "The read-only schedule page"],
+        ["12", "Scripted call tests against the live agent"],
+        ["13", "The read-only schedule page"],
     ]),
     ("h3", "Two prompts worth reusing on any build"),
     ("prompt", "Before writing code, research the CURRENT official documentation for <service>. Tell me which of my "
