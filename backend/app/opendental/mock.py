@@ -100,6 +100,10 @@ class MockOpenDentalClient:
             and (birthdate is None or p.birthdate == birthdate)
         ]
 
+    async def get_patient(self, pat_num):
+        self.calls.append("GET /patients/{PatNum}")
+        return self.patients.get(int(pat_num))
+
     async def create_patient(self, last_name, first_name, birthdate, phone):
         self.calls.append("POST /patients")
         return self.add_patient(last_name, first_name, birthdate, phone)

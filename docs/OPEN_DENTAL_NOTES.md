@@ -45,8 +45,8 @@ Sources: the official Open Dental API docs. Links are at the bottom.
 5. **Provider responses include SSN, license and NPI fields,** even in test data. The adapter drops everything except ProvNum, Abbr and the hidden/secondary flags.
 
 ## The test database resets
-Observed 2026-09-23: patients and appointments created the day before (PatNum 22/26-30, AptNum 53) were gone.
-The public developer test database is periodically wiped, so:
+Observed 2026-09-23 AND 2026-09-24: everything created the previous day was gone both times, so the wipe looks nightly.
+The public developer test database is reset, so:
 - Re-run `backend/scripts/seed_demo_patients.py` before a demo to recreate the demo patients.
 - Never rely on anything booked there persisting overnight.
 - A practice's own Open Dental database does not behave this way.

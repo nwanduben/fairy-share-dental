@@ -37,6 +37,7 @@ class OpenDentalAPI(Protocol):
     async def search_patients(
         self, last_name: str, first_name: str, birthdate: date | None
     ) -> list[ODPatient]: ...
+    async def get_patient(self, pat_num: int) -> ODPatient | None: ...
     async def create_patient(
         self, last_name: str, first_name: str, birthdate: date, phone: str | None
     ) -> ODPatient: ...
@@ -128,6 +129,15 @@ class LiveOpenDentalClient:
         if birthdate:
             params["Birthdate"] = birthdate.strftime(OD_DATE)
         return [ODPatient.from_api(d) for d in await self._get_all("/patients/Simple", params)]
+
+    async def get_patient(self, pat_num) -> ODPatient | None:
+        try:
+            data = await self._request("GET", f"/patients/{int(pat_num)}")
+        except OpenDentalError as exc:
+            if exc.status == 404:
+                return None
+            raise
+        return ODPatient.from_api(data) if data else None
 
     async def create_patient(self, last_name, first_name, birthdate, phone) -> ODPatient:
         body = {"LName": last_name, "FName": first_name, "Birthdate": birthdate.strftime(OD_DATE)}
