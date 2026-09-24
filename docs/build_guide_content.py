@@ -52,6 +52,24 @@ CONTENT = [
     ]),
 
     ("pagebreak", None),
+    ("h1", "What is live right now"),
+    ("p", "Everything below is running and was checked on 2026-09-24. None of it depends on your laptop being "
+          "awake, so you can record whenever you like."),
+    ("table", [
+        ["Piece", "Where", "State"],
+        ["Joy, the agent", "elevenlabs.io → Agents → Fairy Share Dental – Receptionist (demo)",
+         "Claude Haiku 4.5, 6 tools, knowledge base attached"],
+        ["Backend", "https://fairy-share-dental-2.onrender.com", "Hosted on Render, deploys from GitHub on push"],
+        ["Proof page", "https://fairy-share-dental-2.onrender.com/schedule", "Password protected, read-only, "
+                                                                             "phone friendly"],
+        ["Confirmations", "n8n workflow → Telegram", "Sends only after the appointment is verified"],
+        ["Open Dental", "Public developer test database", "Live reads and writes; wiped nightly"],
+    ]),
+    ("note", "Before you record: run backend/scripts/seed_demo_patients.py. The test database is wiped every night, "
+             "so without it the schedule is empty and Benjamin Johnson will not be found. Then make one throwaway "
+             "booking to warm everything up, and delete nothing — a schedule with a couple of appointments on it "
+             "looks like a real practice."),
+
     ("h1", "Part 1 — The system, accurately"),
     ("code", """CALLER
   |

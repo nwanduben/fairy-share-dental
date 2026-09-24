@@ -18,8 +18,8 @@ CONTENT = [
                          "already uses, and only says “booked” after the software confirms it"],
         ["CTA", "Primary: subscribe. Secondary: implementation enquiry via the description link"],
         ["Tone", "Conversational, evidence-first, humble confidence. No hype words"],
-        ["Assets", "Screen recordings (ElevenLabs, Claude Code, n8n, Open Dental schedule page), two live test "
-                   "calls, one diagram, talking head at desk"],
+        ["Assets", "Screen recordings (ElevenLabs, Claude Code, n8n, the live /schedule page), two test calls, "
+                   "one diagram, talking head at desk"],
         ["Success", "Watch-through past 6:00, comments asking for their PMS, inbound implementation DMs"],
     ]),
 
@@ -38,6 +38,24 @@ CONTENT = [
           "then state the limits. Every section pays off inside itself — no section exists only to set up the next."),
 
     ("pagebreak", None),
+    ("h1", "What is live right now"),
+    ("p", "Everything below is running and was checked on 2026-09-24. None of it depends on your laptop being "
+          "awake, so you can record whenever you like."),
+    ("table", [
+        ["Piece", "Where", "State"],
+        ["Joy, the agent", "elevenlabs.io → Agents → Fairy Share Dental – Receptionist (demo)",
+         "Claude Haiku 4.5, 6 tools, knowledge base attached"],
+        ["Backend", "https://fairy-share-dental-2.onrender.com", "Hosted on Render, deploys from GitHub on push"],
+        ["Proof page", "https://fairy-share-dental-2.onrender.com/schedule", "Password protected, read-only, "
+                                                                             "phone friendly"],
+        ["Confirmations", "n8n workflow → Telegram", "Sends only after the appointment is verified"],
+        ["Open Dental", "Public developer test database", "Live reads and writes; wiped nightly"],
+    ]),
+    ("note", "Before you record: run backend/scripts/seed_demo_patients.py. The test database is wiped every night, "
+             "so without it the schedule is empty and Benjamin Johnson will not be found. Then make one throwaway "
+             "booking to warm everything up, and delete nothing — a schedule with a couple of appointments on it "
+             "looks like a real practice."),
+
     ("h1", "Three hook options (0:25–0:50)"),
     ("p", "All three run after the same 25-second cold open. Pick one; the other two become Reels openings."),
 
@@ -79,7 +97,8 @@ CONTENT = [
     ("table", [
         ["Visual", "Audio"],
         ["Screen recording, full frame: the live test call playing, waveform visible. At 0:18 cut to a split — "
-         "call on the left, /schedule page on the right — and let the appointment appear. Freeze 1s on it.",
+         "call on the left, the live schedule page on the right — and let the appointment appear. Freeze 1s "
+         "on it.",
          "Call audio only, no voiceover. Joy: “…that's Thursday the 24th at 10:30 with Tina. Would that work?” "
          "Caller: “Yes, that's great.” Joy: “One moment while I book that… You're all set.”"],
     ]),
@@ -188,7 +207,8 @@ CONTENT = [
     ("h2", "8:00–10:00 · The live test"),
     ("table", [
         ["Visual", "Audio"],
-        ["Uncut. Split screen: your face small in the corner, call in the middle, /schedule page on the right. Let "
+        ["Uncut. Split screen: your face small in the corner, call in the middle, the live schedule page "
+         "(fairy-share-dental-2.onrender.com/schedule) on the right. Let "
          "the 4-second pauses run. When it verifies, cut to the schedule page and refresh on camera.",
          "Call 1 (books): “Hi, this is Benjamin Johnson, I'd like to book a cleaning this week.” Let it run "
          "through: date of birth, two offered times, the booking, the verification, then the text confirmation. "
@@ -365,6 +385,7 @@ CONTENT = [
         "Availability comes from configured office hours minus live appointments — say this plainly, don't imply "
         "Open Dental supplied the open slots.",
         "The test database is wiped nightly — observed twice.",
+        "The schedule page reads live from Open Dental and cannot write to it — deployed and checked 2026-09-24.",
         "It refuses to book for a caller describing a medical emergency and holds that line under pressure — tested 2026-09-24, three checks passed.",
     ]),
     ("warn", "Do not say: that it is HIPAA compliant, that a real practice is using it, that it handles rescheduling "
