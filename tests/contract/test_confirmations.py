@@ -112,3 +112,25 @@ def test_demo_mode_routes_sms_to_telegram(settings, od, n8n):
         assert r["sent"] is True
         assert n8n["calls"][-1]["json"]["channel"] == "telegram"
         assert n8n["calls"][-1]["json"]["to"] == "999111"
+
+
+def test_whatsapp_accepts_international_numbers(client, n8n):
+    ref = booked_ref(client)
+    r = post(client, "send_confirmation", {"appointment_ref": ref, "channel": "whatsapp", "phone": "+234 802 555 0199"})
+    assert r["sent"] is True
+    body = n8n["calls"][-1]["json"]
+    assert body["channel"] == "whatsapp" and body["to"] == "+2348025550199"
+    assert "on WhatsApp" in r["agent_instruction"]
+
+
+def test_whatsapp_us_number_gets_country_code(client, n8n):
+    ref = booked_ref(client)
+    assert post(client, "send_confirmation", {"appointment_ref": ref, "channel": "whatsapp", "phone": "(214) 555-0111"})["sent"]
+    assert n8n["calls"][-1]["json"]["to"] == "+12145550111"
+
+
+def test_whatsapp_rejects_a_bad_number(client, n8n):
+    ref = booked_ref(client)
+    r = post(client, "send_confirmation", {"appointment_ref": ref, "channel": "whatsapp", "phone": "555"})
+    assert r["sent"] is False and r["reason"] == "invalid_phone"
+    assert n8n["calls"] == []

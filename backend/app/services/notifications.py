@@ -30,6 +30,7 @@ class ConfirmationSender:
         telegram_chat_id: str = "",
         header_name: str = "X-FSD-Secret",
         demo_sms_via_telegram: bool = False,
+        whatsapp_number: str = "",
         timeout_seconds: float = 10.0,
         transport: httpx.AsyncBaseTransport | None = None,
     ):
@@ -38,6 +39,7 @@ class ConfirmationSender:
         self.telegram_chat_id = telegram_chat_id
         self.header_name = header_name
         self.demo_sms_via_telegram = demo_sms_via_telegram
+        self.whatsapp_number = whatsapp_number
         self._http = httpx.AsyncClient(timeout=timeout_seconds, transport=transport)
         self._sent: set[tuple[int, str]] = set()  # (AptNum, channel): don't send duplicates
 

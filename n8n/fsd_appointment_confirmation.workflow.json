@@ -108,6 +108,30 @@
                 },
                 "conditions": [
                   {
+                    "id": "c-whatsapp",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "whatsapp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "whatsapp"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
                     "id": "c-telegram",
                     "leftValue": "={{ $json.channel }}",
                     "rightValue": "telegram",
@@ -183,7 +207,7 @@
       "typeVersion": 1.2,
       "position": [
         760,
-        500
+        820
       ],
       "onError": "continueRegularOutput",
       "parameters": {
@@ -213,6 +237,30 @@
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ ok: true, sent: !$json.error, channel: $('Build Message').first().json.channel, error: $json.error ? String($json.error.message || $json.error) : null }) }}",
         "options": {}
+      }
+    },
+    {
+      "id": "wa",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        760,
+        640
+      ],
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "REPLACE_WITH_YOUR_PHONE_NUMBER_ID",
+        "recipientPhoneNumber": "={{ $json.to }}",
+        "textBody": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "credentials": {
+        "whatsAppApi": {
+          "id": "REPLACE_ME",
+          "name": "WhatsApp account"
+        }
       }
     }
   ],
@@ -257,6 +305,13 @@
         ],
         [
           {
+            "node": "Send WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Send Telegram",
             "type": "main",
             "index": 0
@@ -287,6 +342,17 @@
       ]
     },
     "Send Telegram": {
+      "main": [
+        [
+          {
+            "node": "Respond to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp": {
       "main": [
         [
           {

@@ -29,6 +29,7 @@ class Settings:
     telegram_chat_id: str = ""
     demo_sms_via_telegram: bool = False
     admin_password: str = ""
+    whatsapp_number: str = ""
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -52,6 +53,7 @@ class Settings:
             telegram_chat_id=os.getenv("TELEGRAM_CHAT_ID", ""),
             demo_sms_via_telegram=os.getenv("DEMO_SMS_VIA_TELEGRAM", "false").strip().lower() in {"1", "true", "yes"},
             admin_password=os.getenv("ADMIN_PASSWORD", ""),
+            whatsapp_number=os.getenv("WHATSAPP_NUMBER", ""),
         )
         s.validate()
         return s

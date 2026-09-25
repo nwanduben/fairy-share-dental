@@ -94,12 +94,13 @@ TOOLS = [
     },
     {
         "name": "send_confirmation",
-        "description": "Send a written confirmation of a VERIFIED appointment by email, text (SMS) or Telegram. Only call after verify_appointment returned verified=true and the caller asked for a confirmation.",
+        "description": "Send a written confirmation of a VERIFIED appointment by email, text (SMS), WhatsApp or Telegram. Only call after verify_appointment returned verified=true and the caller asked for a confirmation.",
         "properties": {
             "appointment_ref": s("Exact appointment_ref of the verified appointment"),
-            "channel": s("Where to send it", enum=["email", "sms", "telegram"]),
+            "channel": s("Where to send it", enum=["email", "sms", "whatsapp", "telegram"]),
             "email": s("Email address, spelled back and confirmed by the caller (email only)"),
-            "phone": s("10-digit US mobile number (sms only). Default to the caller's number if they agree."),
+            "phone": s("Mobile number for sms or whatsapp. 10 digits for a US number; include the country code "
+                       "for WhatsApp outside the US. Default to the caller's number if they agree."),
         },
         "required": ["appointment_ref", "channel"],
     },

@@ -14,7 +14,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field, field_validator
 
-from ..opendental.models import OD_DATETIME, OpenDentalError, normalize_phone
+from ..opendental.models import OD_DATETIME, OpenDentalError, normalize_phone, to_e164
 from ..refs import InvalidRef
 from ..services.notifications import EMAIL_RE
 from ..security import require_tool_secret
@@ -94,7 +94,7 @@ class VerifyAppointmentRequest(BaseModel):
 
 class SendConfirmationRequest(BaseModel):
     appointment_ref: str
-    channel: Literal["email", "sms", "telegram"]
+    channel: Literal["email", "sms", "whatsapp", "telegram"]
     email: str | None = Field(default=None, max_length=254)
     phone: str | None = Field(default=None, max_length=30)
     conversation_id: str | None = None
@@ -349,6 +349,12 @@ async def send_confirmation(body: SendConfirmationRequest, request: Request):
             _log("send_confirmation", body.conversation_id, "sms_routed_to_telegram_demo")
             body = body.model_copy(update={"channel": "telegram"})
             destination = notifier.telegram_chat_id
+    elif body.channel == "whatsapp":
+        # WhatsApp reaches any country, so accept international numbers.
+        destination = to_e164(body.phone) or (notifier.whatsapp_number or "")
+        if not destination:
+            return {"ok": False, "sent": False, "reason": "invalid_phone",
+                    "agent_instruction": "Ask for the WhatsApp number including the country code, then retry."}
     else:  # telegram
         destination = notifier.telegram_chat_id
         if not destination:
@@ -372,7 +378,8 @@ async def send_confirmation(body: SendConfirmationRequest, request: Request):
     result = await notifier.send(expected["a"], body.channel, destination, details, body.conversation_id)
     _log("send_confirmation", body.conversation_id, f"channel={body.channel} sent={result.sent} reason={result.reason}")
     if result.sent:
-        where = {"email": "by email", "sms": "by text", "telegram": "on Telegram"}[body.channel]
+        where = {"email": "by email", "sms": "by text", "whatsapp": "on WhatsApp",
+                 "telegram": "on Telegram"}[body.channel]
         return {"ok": True, "sent": True, "channel": body.channel,
                 "agent_instruction": f"Tell the caller their confirmation is on its way {where}."}
     return {"ok": False, "sent": False, "reason": result.reason,

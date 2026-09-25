@@ -28,11 +28,22 @@ agent can say "you're still booked; the office will follow up."
 4. **Email** (free):
    - Open *Send Email (Gmail)* → connect a Gmail account through OAuth.
    - Alternatively, swap the node for **Send Email (SMTP)**.
-5. **SMS** (optional; Twilio is paid):
+5. **WhatsApp** (free to test with Meta's Cloud API):
+   - Go to developers.facebook.com → **Create App** → **Business** → add the **WhatsApp** product.
+   - Meta gives you a **test phone number**, a **Phone number ID** and a temporary access token (24 hours; generate a
+     permanent one via a System User later).
+   - Under **API Setup**, add your own number to the recipient list and verify the code. Up to 5 test recipients.
+   - **Message the test number from your phone first.** WhatsApp only allows free-form business messages inside a
+     24-hour window after the user writes; outside it you need an approved message template.
+   - In n8n, open *Send WhatsApp* → new WhatsApp credential → paste the access token. Put the Phone number ID in the
+     node's **Phone Number ID** field.
+   - Optionally set `WHATSAPP_NUMBER` in the backend `.env` as the fallback recipient.
+
+6. **SMS** (optional; Twilio is paid):
    - Connect Twilio in *Send SMS (Twilio)*, and replace `from` with your Twilio number.
    - Real US SMS also requires A2P 10DLC registration.
    - If you skip Twilio, the agent should offer email or Telegram only.
-6. **Activate** the workflow. Copy the **Production URL** of the webhook, e.g.
+7. **Activate** the workflow. Copy the **Production URL** of the webhook, e.g.
    `https://<your-n8n-host>/webhook/fsd-appointment-confirmation`, into the backend `.env` as
    `N8N_CONFIRMATION_WEBHOOK_URL`. Restart the backend; `/health` should show `"confirmations":"enabled"`.
 
@@ -45,7 +56,7 @@ For real patients, use SMS (Twilio) or email.
 ```json
 {
   "event": "appointment.verified",
-  "channel": "email|sms|telegram",
+  "channel": "email|sms|whatsapp|telegram",
   "to": "address, +1XXXXXXXXXX, or chat id",
   "appointment_id": 53,
   "conversation_id": "...",

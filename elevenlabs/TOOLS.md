@@ -82,9 +82,9 @@ Each `slot_id` expires after 15 minutes.
 | Body param | Type | Required | Description |
 |---|---|---|---|
 | appointment_ref | string | yes | Exact `appointment_ref` of the verified appointment |
-| channel | string (enum) | yes | `email`, `sms`, or `telegram` |
+| channel | string (enum) | yes | `email`, `sms`, `whatsapp`, or `telegram` |
 | email | string | email only | Address spelled back and confirmed by the caller |
-| phone | string | sms only | 10-digit US mobile number. Default to the caller's number if they agree |
+| phone | string | sms / whatsapp | 10 digits for US SMS; include the country code for WhatsApp abroad |
 | conversation_id | string | no | `system__conversation_id` |
 
 **Returns:** `sent: true`, or `sent: false` with a `reason`:

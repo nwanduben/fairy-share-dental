@@ -66,6 +66,7 @@ def create_app(
         settings.n8n_confirmation_webhook_url, settings.n8n_webhook_secret, settings.telegram_chat_id,
         header_name=settings.n8n_webhook_header,
         demo_sms_via_telegram=settings.demo_sms_via_telegram,
+        whatsapp_number=settings.whatsapp_number,
     )
 
     @asynccontextmanager

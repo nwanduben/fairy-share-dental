@@ -148,3 +148,14 @@ def normalize_phone(value: str | None) -> str:
     if len(digits) == 11 and digits.startswith("1"):
         digits = digits[1:]
     return digits
+
+
+def to_e164(value: str | None, default_country_code: str = "1") -> str | None:
+    """'(214) 555-0111' -> '+12145550111'. A 10-digit number takes the default
+    country code; 11-15 digits is treated as already including one. None if invalid."""
+    digits = _digits(value or "")
+    if len(digits) == 10:
+        return f"+{default_country_code}{digits}"
+    if 11 <= len(digits) <= 15:
+        return f"+{digits}"
+    return None
