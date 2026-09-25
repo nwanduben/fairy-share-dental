@@ -4,3 +4,4 @@ __pycache__/
 .pytest_cache/
 elevenlabs/.provisioned.json
 .env.render
+.env.backup
