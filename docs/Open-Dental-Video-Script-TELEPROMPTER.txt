@@ -1,0 +1,135 @@
+I BUILT AN AI RECEPTIONIST THAT BOOKS INTO OPEN DENTAL
+Teleprompter script — spoken lines only · ~11:30 · VoiceAI With Benji
+Visuals, on-screen text and production notes are in the PDF.
+======================================================================
+
+PICK YOUR HOOK (read one at 0:25) — full rationale in the PDF
+
+[Hook A — Proof first (recommended)]
+“That was a test call to an AI receptionist I built for a dental practice. It checked the schedule, booked a cleaning, and that appointment is now sitting in Open Dental — the software the front desk actually runs on. Not a calendar invite. The practice system.”
+
+[Hook B — The missing shot]
+“Most AI receptionist demos end at the phone call. They never show you the calendar afterwards. So this whole video is the part they skip — here's the call, and here's the appointment landing in Open Dental, live.”
+
+[Hook C — Failure first]
+“I'm going to show you the call where my AI receptionist refuses to book an appointment. That's the one that matters. But first, here's the one where it works.”
+
+======================================================================
+
+(Read the quoted lines. Bracketed notes are for you, not the camera.)
+
+----------------------------------------------------------------------
+0:00–0:25 · COLD OPEN
+----------------------------------------------------------------------
+
+Call audio only, no voiceover. Joy: “…that's Thursday the 24th at 10:30 with Tina. Would that work?” Caller: “Yes, that's great.” Joy: “One moment while I book that… You're all set.”
+
+[NOTE: On-screen label from second 1, unmissable: “Test call · fictional practice · test database”. That label is your brand's proof standard and your compliance cover. It stays up for the whole cold open.]
+
+----------------------------------------------------------------------
+0:25–1:00 · HOOK AND INTRO
+----------------------------------------------------------------------
+
+Chosen hook (A, B or C). Then: “Hi guys, my name is Ben, and I build conversational AI systems. In this video I'll show you exactly how this one is built — the voice agent, the tools it's allowed to use, the backend that talks to Open Dental, and the workflow that sends the confirmation. Then I'll test it twice: once where it books, and once where it should refuse.”
+
+----------------------------------------------------------------------
+1:00–2:00 · WHY A PRACTICE SYSTEM, NOT A CALENDAR
+----------------------------------------------------------------------
+
+“A dental office runs its entire day inside a practice management system. Open Dental, Dentrix, Eaglesoft. The schedule, the patients, the providers — all in there.”
+
+“So if the AI books into a separate calendar, someone at the front desk still has to copy every booking across. The work doesn't disappear, it just moves.”
+
+“One rule for this build: the AI reads and writes the same schedule the front desk uses. I picked Open Dental because it publishes its API and hosts a free test database, so I could build against the real software without ever touching a real practice.”
+
+----------------------------------------------------------------------
+2:00–3:00 · THE SYSTEM IN ONE PICTURE
+----------------------------------------------------------------------
+
+“Four parts. Joy is the voice — she listens and talks. The tools are the only actions she's allowed to take: check availability, find the patient, book, verify. The backend is the only thing that touches Open Dental. And n8n sends the written confirmation afterwards.”
+
+“Joy never touches the database. She can use the tools I gave her and nothing else. The model proposes. The workflow decides.”
+
+[NOTE: This is the line people will quote. Land it clean, then hold one beat of silence before moving on.]
+
+----------------------------------------------------------------------
+3:00–5:00 · BUILD 1: THE AGENT AND THE PROMPT
+----------------------------------------------------------------------
+
+“Her opening line: thank you for calling Fairy Share Dental, how can I help you today?”
+
+“The prompt gives her a role and three hard rules. One — everything she outputs is spoken out loud, so she never narrates her own thinking. That one came from a bug, and I'll show you it in a minute.”
+
+“Two — one question at a time. Stack three questions on a phone call and you sound like a form.”
+
+“Three — emergencies first. Trouble breathing, swelling spreading, heavy bleeding: call 911, and do not book.”
+
+“And a knowledge base — hours, location, services. Ask if we're open Saturday and she reads from that document instead of guessing.”
+
+----------------------------------------------------------------------
+5:00–6:30 · BUILD 2: CONNECTING OPEN DENTAL
+----------------------------------------------------------------------
+
+“Open Dental's API uses two keys, a developer key and a practice key. I built against their test database — never build against a live office.”
+
+“Find the patient: name and date of birth. No match, and she treats them as new.”
+
+“Check availability: office hours minus everything genuinely booked, and it returns three times, not twenty. Give a voice agent twenty options and it will read all twenty out loud.”
+
+“Book: the backend re-checks the slot, then creates the appointment. And here's the part I care about — creating it doesn't mean it's booked. This function literally cannot return the word booked. It returns pending verification.”
+
+“Verify: read the appointment back out of Open Dental and compare the patient, the time, the room, the provider, the length. Only if all of that matches does Joy get to say you're all set.”
+
+----------------------------------------------------------------------
+6:30–8:00 · WHAT BROKE
+----------------------------------------------------------------------
+
+“Three things broke, and they're the interesting part.”
+
+“First, the schedule was empty. Open Dental's slot finder returned nothing, every time. That test database has no provider schedules, and you can't create them through the API. So availability comes from the office hours I configured, minus what's genuinely booked. Every conflict check is still real — I'll say that plainly rather than pretend.”
+
+“Second, she read her own notes out loud. Mid-call: ‘The user is a new patient. I need to collect their name…'. That was the model thinking out loud. Different model, plus that rule in the prompt, fixed it.”
+
+“Third, and this is the serious one: the confirmation step could report success when nothing was sent. The workflow returned an OK with an empty body and my code counted it as sent. Now only an explicit sent: true counts. It's the same bug as telling someone they're booked when they're not — a success nobody actually checked.”
+
+** Add this fourth story — it is the strongest one you have **
+
+(“And one more, which I only found because I tested it properly. I replaced the tool answers with a broken response — something the system couldn't read. She invented two appointment times that didn't exist and told the caller they were all set.”)
+
+(“The tool hadn't failed loudly. It just said nothing useful, and she filled in the gap. So the rule is explicit now: if you can't read the times, you have no times. If you can't read verified true, it isn't booked. I re-tested it, and now she says she's having trouble with the schedule and offers a call back.”)
+
+(Visual: the broken response on screen, the invented times highlighted, then the same call after the fix.)
+
+(Soft CTA here, at the emotional high point of the build section:)
+
+(“If you're getting something out of this, subscribe — I'm building the Dentrix version next.”)
+
+----------------------------------------------------------------------
+8:00–10:00 · THE LIVE TEST
+----------------------------------------------------------------------
+
+Call 1 (books): “Hi, this is Benjamin Johnson, I'd like to book a cleaning this week.” Let it run through: date of birth, two offered times, the booking, the verification, then the text confirmation. Then: “Same patient, same time, in Open Dental. And notice she asked before sending the confirmation — that only goes out after the appointment is verified.”
+
+Call 2 (refuses): “I have facial swelling and I'm finding it hard to breathe.” Then: “She gave the emergency instruction, didn't try to diagnose me, and didn't book a routine appointment. Booking is the easy part. What makes this safe for a dental office is what it won't do.”
+
+[NOTE: Verified 2026-09-24 against the live agent using ElevenLabs' simulation API, with a caller who pushed three times for a same-day appointment. Joy redirected to 911 every time, booked nothing, offered no times and gave no clinical advice — all three checks passed. You tested this, so you can say so on camera.]
+
+----------------------------------------------------------------------
+10:00–11:00 · BEFORE A REAL PRACTICE USES THIS
+----------------------------------------------------------------------
+
+“Everything you've seen used a test database and invented patients. A real practice handles patient health information, so before going live you need four things.”
+
+“A HIPAA-eligible setup from your voice provider, with a signed BAA. API keys stored as secrets, never written into the prompt. A human fallback, so any caller can reach the front desk. And logging, so the office can see every booking the AI made.”
+
+“I'm not giving legal advice — work through that list with the practice's compliance person.”
+
+----------------------------------------------------------------------
+11:00–11:30 · CLOSE
+----------------------------------------------------------------------
+
+“So that's the build: a voice agent, a small set of tools that limit what she can do, a backend that verifies before anyone hears the word booked, and a confirmation that only goes out once the appointment is real.”
+
+“Same pattern works with Dentrix, Eaglesoft, or anything with an API — swap the tools, keep the rules.”
+
+“If you want this built for your practice or your clients, the link's in the description. And if you haven't seen my first receptionist video, watch that one next.”
