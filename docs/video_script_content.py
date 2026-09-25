@@ -48,7 +48,7 @@ CONTENT = [
         ["Backend", "https://fairy-share-dental-2.onrender.com", "Hosted on Render, deploys from GitHub on push"],
         ["Proof page", "https://fairy-share-dental-2.onrender.com/schedule", "Password protected, read-only, "
                                                                              "phone friendly"],
-        ["Confirmations", "n8n workflow → Telegram", "Sends only after the appointment is verified"],
+        ["Confirmations", "n8n workflow → WhatsApp, Telegram or email", "Sends only after the appointment is verified. WhatsApp is the one to film"],
         ["Open Dental", "Public developer test database", "Live reads and writes; wiped nightly"],
     ]),
     ("note", "Before you record: run backend/scripts/seed_demo_patients.py. The test database is wiped every night, "
@@ -208,12 +208,14 @@ CONTENT = [
     ("table", [
         ["Visual", "Audio"],
         ["Uncut. Split screen: your face small in the corner, call in the middle, the live schedule page "
-         "(fairy-share-dental-2.onrender.com/schedule) on the right. Let "
+         "(fairy-share-dental-2.onrender.com/schedule) on the right, and your phone in shot for the WhatsApp "
+         "message. Let "
          "the 4-second pauses run. When it verifies, cut to the schedule page and refresh on camera.",
          "Call 1 (books): “Hi, this is Benjamin Johnson, I'd like to book a cleaning this week.” Let it run "
-         "through: date of birth, two offered times, the booking, the verification, then the text confirmation. "
-         "Then: “Same patient, same time, in Open Dental. And notice she asked before sending the confirmation — "
-         "that only goes out after the appointment is verified.”"],
+         "through: date of birth, two offered times, the booking, the verification. When she asks about a "
+         "confirmation, say WhatsApp and give your number, then cut to your phone as the message lands. "
+         "Then: “Same patient, same time, in Open Dental. And that WhatsApp only went out after the appointment was "
+         "verified — if the verification had failed, there would be no message, and no you are booked.”"],
     ]),
     ("table", [
         ["Visual", "Audio"],
@@ -266,6 +268,7 @@ CONTENT = [
         ["7:40", "Only “sent: true” counts", "Beside the fixed code"],
         ["9:10", "It refused to book", "After the emergency answer, hold 3 seconds"],
         ["10:05", "Before a real practice uses this", "Section marker over the checklist"],
+        ["9:05", "Confirmation sent only after verification", "As the WhatsApp lands on your phone"],
         ["11:15", "Build this for your practice → link in description", "End card"],
     ]),
     ("p", "Captions: burn in for LinkedIn and Facebook (sound-off autoplay). On YouTube, upload the caption file "
@@ -360,7 +363,9 @@ CONTENT = [
                   "proof"],
         ["Blur list", "API keys, .env, Render dashboard, Telegram chat ID, the n8n credential dialogs"],
         ["Prep", "Re-seed demo patients (the test database wipes nightly), warm the backend, log into the "
-                 "schedule page in advance"],
+                 "schedule page in advance, and message the WhatsApp test number so the 24-hour window is open"],
+        ["WhatsApp", "Meta test number. The access token expires every 24 hours — regenerate it in Meta and "
+                     "update the n8n credential before filming"],
         ["Complexity", "Medium — two live calls and heavy screen capture, but no location shoot or animation work"],
     ]),
 
@@ -386,6 +391,7 @@ CONTENT = [
         "Open Dental supplied the open slots.",
         "The test database is wiped nightly — observed twice.",
         "The schedule page reads live from Open Dental and cannot write to it — deployed and checked 2026-09-24.",
+        "Confirmations go out by WhatsApp, text, email or Telegram, and only after the appointment is verified — WhatsApp tested end to end on 2026-09-25.",
         "It refuses to book for a caller describing a medical emergency and holds that line under pressure — tested 2026-09-24, three checks passed.",
     ]),
     ("warn", "Do not say: that it is HIPAA compliant, that a real practice is using it, that it handles rescheduling "

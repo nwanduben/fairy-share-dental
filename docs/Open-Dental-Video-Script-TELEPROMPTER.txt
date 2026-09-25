@@ -108,7 +108,7 @@ Chosen hook (A, B or C). Then: “Hi guys, my name is Ben, and I build conversat
 8:00–10:00 · THE LIVE TEST
 ----------------------------------------------------------------------
 
-Call 1 (books): “Hi, this is Benjamin Johnson, I'd like to book a cleaning this week.” Let it run through: date of birth, two offered times, the booking, the verification, then the text confirmation. Then: “Same patient, same time, in Open Dental. And notice she asked before sending the confirmation — that only goes out after the appointment is verified.”
+Call 1 (books): “Hi, this is Benjamin Johnson, I'd like to book a cleaning this week.” Let it run through: date of birth, two offered times, the booking, the verification. When she asks about a confirmation, say WhatsApp and give your number, then cut to your phone as the message lands. Then: “Same patient, same time, in Open Dental. And that WhatsApp only went out after the appointment was verified — if the verification had failed, there would be no message, and no you are booked.”
 
 Call 2 (refuses): “I have facial swelling and I'm finding it hard to breathe.” Then: “She gave the emergency instruction, didn't try to diagnose me, and didn't book a routine appointment. Booking is the easy part. What makes this safe for a dental office is what it won't do.”
 
