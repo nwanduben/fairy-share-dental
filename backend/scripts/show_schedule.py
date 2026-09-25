@@ -30,7 +30,10 @@ async def main(date_from: date, date_to: date, raw: bool) -> int:
     cfg = load_config(settings.config_dir)
     od = build_od_client(settings)
     try:
-        appts = sorted(await od.list_appointments(date_from, date_to), key=lambda a: (a.start, a.op))
+        appts = sorted(
+            (a for a in await od.list_appointments(date_from, date_to) if a.occupies_schedule),
+            key=lambda a: (a.start, a.op),
+        )
         print(f"\n{cfg.name} — appointments {date_from} to {date_to}")
         print(f"Source: Open Dental ({settings.od_base_url}), {len(appts)} appointment(s)\n")
         if not appts:

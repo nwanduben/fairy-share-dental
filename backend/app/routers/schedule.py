@@ -54,7 +54,12 @@ async def schedule(request: Request, date_from: str | None = None, days: int = 7
     end = start + timedelta(days=days - 1)
 
     try:
-        appts = sorted(await s.od.list_appointments(start, end), key=lambda a: (a.start, a.op))
+        # Only what is actually on the appointment book: Planned and UnschedList appointments
+        # have been taken off the schedule, so staff should not see them here.
+        appts = sorted(
+            (a for a in await s.od.list_appointments(start, end) if a.occupies_schedule),
+            key=lambda a: (a.start, a.op),
+        )
         names = await _patient_names(request, appts)
     except OpenDentalError as exc:
         log.warning("schedule read failed: %s", exc)

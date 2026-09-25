@@ -98,3 +98,11 @@ def test_password_is_trimmed_on_both_sides(settings, od):
     app.state.availability.now_local = lambda: FIXED_NOW
     with TestClient(app) as c:
         assert c.post("/schedule/login", data={"password": PASSWORD}, follow_redirects=False).status_code == 303
+
+
+def test_unscheduled_appointments_are_hidden(client, od):
+    login(client)
+    od.add_appointment(start=datetime(2026, 9, 22, 16, 0), op=1, pattern="/XXXX/", prov_num=1,
+                       pat_num=1002, status="UnschedList", note="[FSD-AI] Cleaning — cancelled demo")
+    body = client.get("/schedule?date_from=2026-09-22&days=1").text
+    assert "UnschedList" not in body and "4:00 PM" not in body
