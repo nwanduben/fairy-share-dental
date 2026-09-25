@@ -172,7 +172,9 @@ CONTENT = [
          "about — creating it doesn't mean it's booked. This function literally cannot return the word booked. It "
          "returns pending verification.” / “Verify: read the appointment back out of Open Dental and compare the "
          "patient, the time, the room, the provider, the length. Only if all of that matches does Joy get to say "
-         "you're all set.”"],
+         "you're all set.”" / "
+         "“Then the confirmation. She asks how they want it — text, WhatsApp or email — and that "
+         "message only goes out after a second check that the appointment is still there.”"],
     ]),
 
     ("h2", "6:30–8:00 · What broke"),
