@@ -48,7 +48,13 @@ class AvailabilityService:
             return []
         earliest = now + timedelta(minutes=self.cfg.rules.min_notice_minutes)
 
-        existing = await self.od.list_appointments(start, end)
+        # Always read the same wide window so every call in a conversation shares one
+        # cache entry, then filter locally. Open Dental's list call is the slow one.
+        window_end = now.date() + timedelta(days=self.cfg.rules.max_search_days)
+        existing = [
+            a for a in await self.od.list_appointments(now.date(), window_end)
+            if start <= a.start.date() <= end
+        ]
         windows = await self._windows(appt_type, start, end)
 
         candidates: list[Candidate] = []
@@ -64,6 +70,13 @@ class AvailabilityService:
                 t += step
 
         return [self._to_option(c) for c in _spread(candidates, self.cfg.rules.max_options_offered)]
+
+    async def warm_cache(self) -> None:
+        """Pre-fetch the appointment window so callers never wait on the slow list call."""
+        now = self.now_local()
+        await self.od.list_appointments(
+            now.date(), now.date() + timedelta(days=self.cfg.rules.max_search_days), fresh=True
+        )
 
     async def is_still_free(self, cand: Candidate) -> bool:
         """Fresh re-check straight from Open Dental (no cache) right before booking."""

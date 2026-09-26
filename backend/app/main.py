@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -69,8 +70,19 @@ def create_app(
         whatsapp_number=settings.whatsapp_number,
     )
 
+    async def keep_cache_warm() -> None:
+        """Open Dental can be slow (seconds per call). Refreshing in the background means
+        callers are served from cache instead of waiting on it."""
+        while True:
+            try:
+                await availability.warm_cache()
+            except Exception as exc:  # never let the warmer kill the app
+                log.warning("cache warm failed: %s", type(exc).__name__)
+            await asyncio.sleep(settings.cache_warm_seconds)
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        warmer = asyncio.create_task(keep_cache_warm()) if settings.cache_warm_seconds else None
         if check_on_startup:
             try:
                 for p in await check_config_against_open_dental(cfg, od):
@@ -78,11 +90,13 @@ def create_app(
             except OpenDentalError as exc:
                 log.warning("config check skipped: %s", exc)
         yield
+        if warmer:
+            warmer.cancel()
         await od.aclose()
         await notifier.aclose()
 
-    app = FastAPI(title="Fairy Share Dental — AI Receptionist Tools", version="0.1.0", lifespan=lifespan)
     availability = AvailabilityService(cfg, od)
+    app = FastAPI(title="Fairy Share Dental — AI Receptionist Tools", version="0.1.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.cfg = cfg
     app.state.od = od

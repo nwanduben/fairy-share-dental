@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from ..opendental.client import OpenDentalAPI
 from ..opendental.models import OD_DATETIME, ODAppointment, OpenDentalError
@@ -57,7 +57,12 @@ class BookingService:
 
         # Idempotency: if this exact appointment already exists (e.g. the tool call was
         # retried after a timeout), return it instead of booking twice.
-        mine = await self.od.list_appointments(day, day, pat_num=pat_num)
+        # Served from the warm cache: this only guards against a retried tool call.
+        window_end = day + timedelta(days=1)
+        mine = [
+            a for a in await self.od.list_appointments(day, window_end)
+            if a.pat_num == pat_num
+        ]
         for a in mine:
             if a.status == "Scheduled" and a.start == cand.start and a.op == cand.op:
                 log.info("idempotent hit apt=%s", a.apt_num)

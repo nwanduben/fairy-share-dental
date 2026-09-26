@@ -28,7 +28,7 @@ log = logging.getLogger("fsd.opendental")
 PAGE_SIZE = 100          # Remote API returns at most 100 items per request
 MAX_PAGES = 20           # safety cap
 MAX_429_RETRIES = 3
-APPOINTMENT_CACHE_SECONDS = 20  # a voice call makes several reads of the same days
+APPOINTMENT_CACHE_SECONDS = 90  # a background task refreshes this; see keep_cache_warm
 MAX_RETRY_AFTER_SECONDS = 10
 
 

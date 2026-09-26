@@ -68,6 +68,7 @@ TOOLS = [
     },
     {
         "name": "create_appointment",
+        "timeout": 45,
         "description": "Book the specific offered time the caller clearly agreed to. The result is NOT a confirmation: you must call verify_appointment next.",
         "properties": {
             "slot_id": s("Exact slot_id of the chosen option from get_availability"),
@@ -88,12 +89,14 @@ TOOLS = [
     },
     {
         "name": "verify_appointment",
+        "timeout": 45,
         "description": "Confirm the appointment exists in the practice schedule with the right details. Only after verified=true may you tell the caller they are booked.",
         "properties": {"appointment_ref": s("Exact appointment_ref from create_appointment")},
         "required": ["appointment_ref"],
     },
     {
         "name": "send_confirmation",
+        "timeout": 45,
         "description": "Send a written confirmation of a VERIFIED appointment by email, text (SMS), WhatsApp or Telegram. Only call after verify_appointment returned verified=true and the caller asked for a confirmation.",
         "properties": {
             "appointment_ref": s("Exact appointment_ref of the verified appointment"),
@@ -114,7 +117,7 @@ def tool_payload(t: dict, backend: str, secret_id: str) -> dict:
             "type": "webhook",
             "name": t["name"],
             "description": t["description"],
-            "response_timeout_secs": 20,
+            "response_timeout_secs": t.get("timeout", 30),
             "api_schema": {
                 "url": f"{backend.rstrip('/')}/tools/{t['name']}",
                 "method": "POST",
