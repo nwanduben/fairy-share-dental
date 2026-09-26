@@ -366,6 +366,8 @@ CONTENT = [
         ["Blur list", "API keys, .env, Render dashboard, Telegram chat ID, the n8n credential dialogs"],
         ["Prep", "Run demo_reset.py (the test database wipes nightly), warm the backend, log into the schedule "
                  "page in advance"],
+        ["Check speed", "Open /health. open_dental_latency_secs should be under a second. If open_dental_degraded is true, Open Dental's test API is slow that day and a booking can take a minute — "
+                        "do not film until it recovers"],
         ["WhatsApp", "Two steps, both required: regenerate the Meta token (expires every 24 hours) and paste "
                      "it into the n8n credential, THEN message the test number from your phone. Without that "
                      "message Meta accepts the confirmation and silently drops it"],

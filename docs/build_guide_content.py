@@ -425,6 +425,7 @@ curl -s -H "Authorization: ODFHIR <devkey>/<customerkey>" \\
         "Re-seed the demo patients. The Open Dental test database is wiped nightly, so yesterday's patients and "
         "appointments are gone.",
         "Open /health and check it says live, config and confirmations enabled.",
+        "Check Open Dental is healthy first: open /health and look at open_dental_latency_secs. Under a second is normal. If it says degraded, their test API is slow and a booking can take a minute or more — postpone the shoot rather than filming a system that looks broken.",
         "Check the backend is awake — free hosting sleeps, and a cold start takes about a minute.",
         "Make one throwaway booking to warm everything up, then look at it on the schedule page.",
         "Test the emergency call once, privately.",
