@@ -91,6 +91,7 @@ class LiveOpenDentalClient:
                 wait = self._min_interval - (time.monotonic() - self._last_request)
                 if wait > 0:
                     await asyncio.sleep(wait)
+                started = time.monotonic()
                 try:
                     resp = await self._http.request(method, path, params=params, json=json)
                 except httpx.TimeoutException as exc:
@@ -100,8 +101,8 @@ class LiveOpenDentalClient:
                 finally:
                     self._last_request = time.monotonic()
 
-            self._latency = round(0.7 * self._latency + 0.3 * (time.monotonic() - self._last_request), 3) \
-                if self._latency else round(time.monotonic() - self._last_request, 3)
+            took = self._last_request - started  # how long Open Dental itself took
+            self._latency = round(0.6 * self._latency + 0.4 * took, 3) if self._latency else round(took, 3)
             log.info("od %s %s -> %s (%.1fs avg)", method, path, resp.status_code, self._latency)
             if resp.status_code == 429 and attempt < MAX_429_RETRIES:
                 retry_after = _retry_after(resp)

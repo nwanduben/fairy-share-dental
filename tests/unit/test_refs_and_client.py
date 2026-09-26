@@ -146,3 +146,16 @@ def test_safety_checks_fall_back_to_a_recent_snapshot_when_degraded():
     assert c.is_degraded
     asyncio.run(c.list_appointments(day, day, fresh=True))
     assert len(calls) == 1, "a degraded API should serve the recent snapshot rather than time out the call"
+
+
+def test_latency_is_measured_from_the_request_itself():
+    import time as _time
+    from datetime import date
+
+    def handler(req):
+        _time.sleep(0.05)
+        return httpx.Response(200, json=[])
+
+    c = LiveOpenDentalClient("https://x/api/v1", "D", "C", 0, 5, transport=httpx.MockTransport(handler))
+    asyncio.run(c.list_appointments(date(2026, 9, 28), date(2026, 9, 28)))
+    assert c._latency >= 0.04, f"expected a real measurement, got {c._latency}"
