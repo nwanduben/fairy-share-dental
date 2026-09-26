@@ -28,7 +28,9 @@ log = logging.getLogger("fsd.opendental")
 PAGE_SIZE = 100          # Remote API returns at most 100 items per request
 MAX_PAGES = 20           # safety cap
 MAX_429_RETRIES = 3
-APPOINTMENT_CACHE_SECONDS = 90  # a background task refreshes this; see keep_cache_warm
+APPOINTMENT_CACHE_SECONDS = 90   # a background task refreshes this; see keep_cache_warm
+SLOW_API_SECONDS = 3.0           # above this, Open Dental counts as degraded
+SLOW_MODE_MAX_AGE_SECONDS = 25   # when degraded, a safety check may use a snapshot this recent
 MAX_RETRY_AFTER_SECONDS = 10
 
 
@@ -77,6 +79,7 @@ class LiveOpenDentalClient:
         self._last_request = 0.0
         # (date_start, date_end, pat_num) -> (fetched_at, appointments)
         self._appt_cache: dict[tuple, tuple[float, list[ODAppointment]]] = {}
+        self._latency = 0.0  # rolling average, used to detect a degraded API
 
     async def aclose(self) -> None:
         await self._http.aclose()
@@ -97,7 +100,9 @@ class LiveOpenDentalClient:
                 finally:
                     self._last_request = time.monotonic()
 
-            log.info("od %s %s -> %s", method, path, resp.status_code)
+            self._latency = round(0.7 * self._latency + 0.3 * (time.monotonic() - self._last_request), 3) \
+                if self._latency else round(time.monotonic() - self._last_request, 3)
+            log.info("od %s %s -> %s (%.1fs avg)", method, path, resp.status_code, self._latency)
             if resp.status_code == 429 and attempt < MAX_429_RETRIES:
                 retry_after = _retry_after(resp)
                 await asyncio.sleep(retry_after)
@@ -148,16 +153,27 @@ class LiveOpenDentalClient:
             body["WirelessPhone"] = phone
         return ODPatient.from_api(await self._request("POST", "/patients", json=body))
 
+    @property
+    def is_degraded(self) -> bool:
+        """Open Dental's own API is responding slowly."""
+        return self._latency > SLOW_API_SECONDS
+
     async def list_appointments(self, date_start, date_end, pat_num=None, fresh=False) -> list[ODAppointment]:
         """Reads are cached for a few seconds because one phone call re-reads the same
         days several times. Safety checks (is the slot still free? did we double-book?)
         pass fresh=True and always hit Open Dental."""
         key = (date_start, date_end, pat_num)
+        hit = self._appt_cache.get(key)
+        age = (time.monotonic() - hit[0]) if hit else None
         if not fresh:
-            hit = self._appt_cache.get(key)
-            if hit and (time.monotonic() - hit[0]) < APPOINTMENT_CACHE_SECONDS:
+            if hit and age < APPOINTMENT_CACHE_SECONDS:
                 log.debug("od appointments cache hit %s", key)
                 return hit[1]
+        elif hit and self.is_degraded and age < SLOW_MODE_MAX_AGE_SECONDS:
+            # Open Dental is slow enough that a live check would time out the call.
+            # Use the background-refreshed snapshot instead and say so in the logs.
+            log.warning("od degraded (%.1fs); safety check used a %.0fs-old snapshot", self._latency, age)
+            return hit[1]
         params: dict[str, Any] = {
             "dateStart": date_start.strftime(OD_DATE),
             "dateEnd": date_end.strftime(OD_DATE),

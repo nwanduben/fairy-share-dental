@@ -113,3 +113,36 @@ def test_booking_invalidates_the_cache():
     asyncio.run(c.create_appointment({"PatNum": 1, "Op": 5, "AptDateTime": "2026-09-28 09:00:00"}))
     asyncio.run(c.list_appointments(day, day))
     assert calls.count("GET") == 2, "the schedule changed, so the next read must not be cached"
+
+
+def test_safety_checks_stay_live_when_open_dental_is_healthy():
+    from datetime import date
+    calls = []
+
+    def handler(req):
+        calls.append(1)
+        return httpx.Response(200, json=[])
+
+    c = LiveOpenDentalClient("https://x/api/v1", "D", "C", 0, 5, transport=httpx.MockTransport(handler))
+    day = date(2026, 9, 28)
+    asyncio.run(c.list_appointments(day, day))
+    assert not c.is_degraded
+    asyncio.run(c.list_appointments(day, day, fresh=True))
+    assert len(calls) == 2, "a healthy API must always be checked live"
+
+
+def test_safety_checks_fall_back_to_a_recent_snapshot_when_degraded():
+    from datetime import date
+    calls = []
+
+    def handler(req):
+        calls.append(1)
+        return httpx.Response(200, json=[])
+
+    c = LiveOpenDentalClient("https://x/api/v1", "D", "C", 0, 5, transport=httpx.MockTransport(handler))
+    day = date(2026, 9, 28)
+    asyncio.run(c.list_appointments(day, day))
+    c._latency = 9.0  # Open Dental responding in ~9s
+    assert c.is_degraded
+    asyncio.run(c.list_appointments(day, day, fresh=True))
+    assert len(calls) == 1, "a degraded API should serve the recent snapshot rather than time out the call"

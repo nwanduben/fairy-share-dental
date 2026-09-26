@@ -115,6 +115,8 @@ def create_app(
             "mode": settings.od_mode,
             "availability_source": cfg.availability_source,
             "confirmations": "enabled" if notifier.enabled else "disabled",
+            "open_dental_latency_secs": getattr(od, "_latency", None),
+            "open_dental_degraded": getattr(od, "is_degraded", False),
         }
 
     return app

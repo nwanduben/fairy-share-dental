@@ -30,7 +30,7 @@ class Settings:
     demo_sms_via_telegram: bool = False
     admin_password: str = ""
     whatsapp_number: str = ""
-    cache_warm_seconds: int = 45
+    cache_warm_seconds: int = 20
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -55,7 +55,7 @@ class Settings:
             demo_sms_via_telegram=os.getenv("DEMO_SMS_VIA_TELEGRAM", "false").strip().lower() in {"1", "true", "yes"},
             admin_password=os.getenv("ADMIN_PASSWORD", ""),
             whatsapp_number=os.getenv("WHATSAPP_NUMBER", ""),
-            cache_warm_seconds=int(os.getenv("CACHE_WARM_SECONDS", "45")),
+            cache_warm_seconds=int(os.getenv("CACHE_WARM_SECONDS", "20")),
         )
         s.validate()
         return s
