@@ -28,6 +28,7 @@ log = logging.getLogger("fsd.opendental")
 PAGE_SIZE = 100          # Remote API returns at most 100 items per request
 MAX_PAGES = 20           # safety cap
 MAX_429_RETRIES = 3
+APPOINTMENT_CACHE_SECONDS = 20  # a voice call makes several reads of the same days
 MAX_RETRY_AFTER_SECONDS = 10
 
 
@@ -42,7 +43,7 @@ class OpenDentalAPI(Protocol):
         self, last_name: str, first_name: str, birthdate: date, phone: str | None
     ) -> ODPatient: ...
     async def list_appointments(
-        self, date_start: date, date_end: date, pat_num: int | None = None
+        self, date_start: date, date_end: date, pat_num: int | None = None, fresh: bool = False
     ) -> list[ODAppointment]: ...
     async def get_appointment(self, apt_num: int) -> ODAppointment | None: ...
     async def create_appointment(self, payload: dict[str, Any]) -> ODAppointment: ...
@@ -74,6 +75,8 @@ class LiveOpenDentalClient:
         self._min_interval = min_interval_seconds
         self._lock = asyncio.Lock()
         self._last_request = 0.0
+        # (date_start, date_end, pat_num) -> (fetched_at, appointments)
+        self._appt_cache: dict[tuple, tuple[float, list[ODAppointment]]] = {}
 
     async def aclose(self) -> None:
         await self._http.aclose()
@@ -145,14 +148,25 @@ class LiveOpenDentalClient:
             body["WirelessPhone"] = phone
         return ODPatient.from_api(await self._request("POST", "/patients", json=body))
 
-    async def list_appointments(self, date_start, date_end, pat_num=None) -> list[ODAppointment]:
+    async def list_appointments(self, date_start, date_end, pat_num=None, fresh=False) -> list[ODAppointment]:
+        """Reads are cached for a few seconds because one phone call re-reads the same
+        days several times. Safety checks (is the slot still free? did we double-book?)
+        pass fresh=True and always hit Open Dental."""
+        key = (date_start, date_end, pat_num)
+        if not fresh:
+            hit = self._appt_cache.get(key)
+            if hit and (time.monotonic() - hit[0]) < APPOINTMENT_CACHE_SECONDS:
+                log.debug("od appointments cache hit %s", key)
+                return hit[1]
         params: dict[str, Any] = {
             "dateStart": date_start.strftime(OD_DATE),
             "dateEnd": date_end.strftime(OD_DATE),
         }
         if pat_num is not None:
             params["PatNum"] = pat_num
-        return [ODAppointment.from_api(d) for d in await self._get_all("/appointments", params)]
+        appts = [ODAppointment.from_api(d) for d in await self._get_all("/appointments", params)]
+        self._appt_cache[key] = (time.monotonic(), appts)
+        return appts
 
     async def get_appointment(self, apt_num) -> ODAppointment | None:
         try:
@@ -164,7 +178,9 @@ class LiveOpenDentalClient:
         return ODAppointment.from_api(data) if data else None
 
     async def create_appointment(self, payload) -> ODAppointment:
-        return ODAppointment.from_api(await self._request("POST", "/appointments", json=payload))
+        apt = ODAppointment.from_api(await self._request("POST", "/appointments", json=payload))
+        self._appt_cache.clear()  # the schedule just changed
+        return apt
 
     async def get_slots(self, date_start, date_end, prov_num, op_num, length_minutes):
         params: dict[str, Any] = {

@@ -72,3 +72,44 @@ def test_client_pages_with_offset():
     c = LiveOpenDentalClient("https://x/api/v1", "D", "C", 0, 5, transport=httpx.MockTransport(handler))
     appts = asyncio.run(c.list_appointments(date(2026, 9, 28), date(2026, 9, 28)))
     assert len(appts) == 107 and offsets == [0, 100]
+
+
+def test_appointment_reads_are_cached_but_safety_checks_are_not():
+    """One call re-reads the same days several times; only the safety checks must hit the API."""
+    from datetime import date
+
+    calls = []
+
+    def handler(req):
+        calls.append(str(req.url))
+        return httpx.Response(200, json=[])
+
+    c = LiveOpenDentalClient("https://x/api/v1", "D", "C", 0, 5, transport=httpx.MockTransport(handler))
+    day = date(2026, 9, 28)
+
+    asyncio.run(c.list_appointments(day, day))
+    asyncio.run(c.list_appointments(day, day))
+    assert len(calls) == 1, "second identical read should come from the cache"
+
+    asyncio.run(c.list_appointments(day, day, fresh=True))
+    assert len(calls) == 2, "fresh=True must always hit Open Dental"
+
+
+def test_booking_invalidates_the_cache():
+    from datetime import date
+
+    calls = []
+
+    def handler(req):
+        calls.append(req.method)
+        if req.method == "POST":
+            return httpx.Response(201, json={"AptNum": 9, "PatNum": 1, "AptStatus": "Scheduled",
+                                             "AptDateTime": "2026-09-28 09:00:00", "Op": 5, "Pattern": "XX"})
+        return httpx.Response(200, json=[])
+
+    c = LiveOpenDentalClient("https://x/api/v1", "D", "C", 0, 5, transport=httpx.MockTransport(handler))
+    day = date(2026, 9, 28)
+    asyncio.run(c.list_appointments(day, day))
+    asyncio.run(c.create_appointment({"PatNum": 1, "Op": 5, "AptDateTime": "2026-09-28 09:00:00"}))
+    asyncio.run(c.list_appointments(day, day))
+    assert calls.count("GET") == 2, "the schedule changed, so the next read must not be cached"

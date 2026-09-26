@@ -108,7 +108,7 @@ class MockOpenDentalClient:
         self.calls.append("POST /patients")
         return self.add_patient(last_name, first_name, birthdate, phone)
 
-    async def list_appointments(self, date_start, date_end, pat_num=None):
+    async def list_appointments(self, date_start, date_end, pat_num=None, fresh=False):
         self.calls.append("GET /appointments")
         return [
             a for a in self.appointments.values()

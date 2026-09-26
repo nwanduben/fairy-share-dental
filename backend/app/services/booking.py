@@ -121,7 +121,7 @@ class BookingService:
         # Post-write race check: if another booking landed in the same room/provider
         # at the same time, the older AptNum wins deterministically.
         day = apt.start.date()
-        same_day = await self.od.list_appointments(day, day)
+        same_day = await self.od.list_appointments(day, day, fresh=True)
         cand = Candidate(expected["t"], apt.op, apt.prov_num, apt.prov_hyg, apt.is_hygiene, apt.start, apt.pattern)
         clash = find_conflict(cand, [a for a in same_day if a.apt_num < apt.apt_num], exclude_apt_num=apt.apt_num)
         if clash is not None:

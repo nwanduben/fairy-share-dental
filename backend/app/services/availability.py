@@ -68,7 +68,7 @@ class AvailabilityService:
     async def is_still_free(self, cand: Candidate) -> bool:
         """Fresh re-check straight from Open Dental (no cache) right before booking."""
         day = cand.start.date()
-        existing = await self.od.list_appointments(day, day)
+        existing = await self.od.list_appointments(day, day, fresh=True)
         return find_conflict(cand, existing) is None
 
     async def _windows(self, appt_type: AppointmentType, start: date, end: date):
