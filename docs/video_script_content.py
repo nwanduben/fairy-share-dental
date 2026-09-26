@@ -364,8 +364,11 @@ CONTENT = [
         ["Music", "Light bed under the build sections only. Silence under both test calls — the pauses are the "
                   "proof"],
         ["Blur list", "API keys, .env, Render dashboard, Telegram chat ID, the n8n credential dialogs"],
-        ["Prep", "Re-seed demo patients (the test database wipes nightly), warm the backend, log into the "
-                 "schedule page in advance, and message the WhatsApp test number so the 24-hour window is open"],
+        ["Prep", "Run demo_reset.py (the test database wipes nightly), warm the backend, log into the schedule "
+                 "page in advance"],
+        ["WhatsApp", "Two steps, both required: regenerate the Meta token (expires every 24 hours) and paste "
+                     "it into the n8n credential, THEN message the test number from your phone. Without that "
+                     "message Meta accepts the confirmation and silently drops it"],
         ["WhatsApp", "Meta test number. The access token expires every 24 hours — regenerate it in Meta and "
                      "update the n8n credential before filming"],
         ["Complexity", "Medium — two live calls and heavy screen capture, but no location shoot or animation work"],

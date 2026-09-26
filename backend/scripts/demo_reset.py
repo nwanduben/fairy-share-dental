@@ -31,11 +31,12 @@ from app.services.patients import PatientService  # noqa: E402
 from app.settings import Settings  # noqa: E402
 from seed_demo_patients import DEMO_PATIENTS, card  # noqa: E402
 
-# (patient index, appointment type, "morning"|"afternoon"|"any", days ahead)
+# (patient index, appointment type, "morning"|"afternoon"|"any", which offered option)
+# Times are chosen from the next open days, so this works on a Friday afternoon or a weekend.
 DEMO_BOOKINGS = [
-    (0, "cleaning", "morning", 0),               # Benjamin Johnson, today
-    (1, "general_consultation", "afternoon", 0),  # Sarah Mitchell, today
-    (2, "cleaning", "morning", 1),               # Marcus Reed, tomorrow
+    (0, "cleaning", "morning", 0),                # Benjamin Johnson, first open morning
+    (1, "general_consultation", "afternoon", 0),  # Sarah Mitchell, first open afternoon
+    (2, "cleaning", "morning", 1),                # Marcus Reed, a different day
 ]
 
 
@@ -115,15 +116,19 @@ async def main(book: bool, wake_url: str | None) -> int:
         if book:
             now = avail.now_local()
             print("\n== Demo appointments")
-            for idx, type_key, when, days_ahead in DEMO_BOOKINGS:
+            search_from = now.date()
+            search_to = search_from + timedelta(days=7)
+            for idx, type_key, when, option_index in DEMO_BOOKINGS:
                 first, last, _, _ = DEMO_PATIENTS[idx]
                 patient = created[(first, last)]
-                day = (now + timedelta(days=days_ahead)).date()
-                options = await avail.find_options(cfg.appointment_types[type_key], day, day, when, now)
+                options = await avail.find_options(
+                    cfg.appointment_types[type_key], search_from, search_to, when, now
+                )
                 if not options:
-                    print(f"  skipped {first} {last} ({type_key}, {when} {day}): nothing free")
+                    print(f"  skipped {first} {last} ({type_key}, {when}): nothing free in the next 7 days")
                     continue
-                cand = options[0].candidate
+                pick = options[min(option_index, len(options) - 1)]
+                cand = pick.candidate
                 res = await booking.create(cand, patient.pat_num, False, "demo-reset")
                 if res.status != "created_pending_verification":
                     print(f"  failed {first} {last}: {res.status} {res.reason or ''}")
@@ -134,7 +139,7 @@ async def main(book: bool, wake_url: str | None) -> int:
                 v = await booking.verify(res.appointment.apt_num, expected)
                 mark = "verified" if v.verified else f"NOT VERIFIED ({v.reason})"
                 print(f"  {first} {last}: {cfg.appointment_types[type_key].display_name} "
-                      f"{options[0].spoken_time} with {options[0].provider_name} — {mark}")
+                      f"{pick.spoken_time} with {pick.provider_name} — {mark}")
 
         print(card())
         print("Schedule page: add /schedule to your backend URL.")

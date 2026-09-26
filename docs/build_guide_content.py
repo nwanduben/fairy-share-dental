@@ -428,7 +428,10 @@ curl -s -H "Authorization: ODFHIR <devkey>/<customerkey>" \\
         "Check the backend is awake — free hosting sleeps, and a cold start takes about a minute.",
         "Make one throwaway booking to warm everything up, then look at it on the schedule page.",
         "Test the emergency call once, privately.",
-        "Check your Telegram or email is receiving confirmations.",
+        "Regenerate the Meta WhatsApp token and paste it into the n8n credential. It expires every 24 hours.",
+        "Message the WhatsApp test number from your phone. Meta only allows free-form messages within 24 hours "
+        "of the person writing in — outside that window the API accepts the message and it never arrives.",
+        "Check your WhatsApp is receiving confirmations.",
         "Have the schedule page open on a second screen, already logged in.",
         "Blur or crop: API keys, the .env file, the Render dashboard, your Telegram chat ID.",
     ]),
